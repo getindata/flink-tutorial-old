@@ -3,12 +3,14 @@ package com.getindata.tutorial.base.utils;
 import java.time.Duration;
 import java.time.Instant;
 
+import static com.getindata.tutorial.base.utils.DurationUtils.formatDuration;
+
 public class UserStatistics {
-	private final long userId;
-	private final long count;
-	private final Instant start;
-	private final Instant end;
-	private final Duration duration;
+	private long userId;
+	private long count;
+	private Instant start;
+	private Instant end;
+	private Duration duration;
 
 	public long getUserId() {
 		return userId;
@@ -38,15 +40,24 @@ public class UserStatistics {
 		this.duration = Duration.between(start, end);
 	}
 
-	private static String formatDuration(Duration duration) {
-		long seconds = duration.getSeconds();
-		long absSeconds = Math.abs(seconds);
-		String positive = String.format(
-				"%d:%02d:%02d",
-				absSeconds / 3600,
-				(absSeconds % 3600) / 60,
-				absSeconds % 60);
-		return seconds < 0 ? "-" + positive : positive;
+	public void setUserId(long userId) {
+		this.userId = userId;
+	}
+
+	public void setCount(long count) {
+		this.count = count;
+	}
+
+	public void setStart(Instant start) {
+		this.start = start;
+	}
+
+	public void setEnd(Instant end) {
+		this.end = end;
+	}
+
+	public void setDuration(Duration duration) {
+		this.duration = duration;
 	}
 
 	@Override

@@ -16,24 +16,22 @@
  * limitations under the License.
  */
 
-package com.getindata.tutorial.base.kafka;
+package com.getindata.tutorial.base.utils;
 
-import java.util.Properties;
+import java.time.Duration;
 
-//TODO set appropriate parameters
-public class KafkaProperties {
-
-	public static Properties getKafkaProperties() {
-		final Properties properties = new Properties();
-		properties.setProperty("bootstrap.servers", "localhost:9092");
-
-		return properties;
+public class DurationUtils {
+	public static String formatDuration(Duration duration) {
+		long seconds = duration.getSeconds();
+		long absSeconds = Math.abs(seconds);
+		String positive = String.format(
+				"%d:%02d:%02d",
+				absSeconds / 3600,
+				(absSeconds % 3600) / 60,
+				absSeconds % 60);
+		return seconds < 0 ? "-" + positive : positive;
 	}
 
-	public static String getTopic() {
-		return "songs";
-	}
-
-	private KafkaProperties() {
+	private DurationUtils() {
 	}
 }

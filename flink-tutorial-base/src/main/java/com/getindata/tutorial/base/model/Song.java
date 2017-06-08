@@ -1,9 +1,12 @@
 package com.getindata.tutorial.base.model;
 
 public class Song {
-	private final long length;
-	private final String name;
-	private final String author;
+	private long length;
+	private String name;
+	private String author;
+
+	public Song() {
+	}
 
 	public Song(long length, String name, String author) {
 		this.length = length;
@@ -21,6 +24,18 @@ public class Song {
 
 	public String getAuthor() {
 		return author;
+	}
+
+	public void setLength(long length) {
+		this.length = length;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public void setAuthor(String author) {
+		this.author = author;
 	}
 
 	@Override
