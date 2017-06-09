@@ -15,12 +15,7 @@ public class FilterSongs {
 		final DataStream<SongEvent> events = sEnv.addSource(new SongsSource());
 
 		// filter events
-		final DataStream<SongEvent> filteredEvents = events.filter(new FilterFunction<SongEvent>() {
-			@Override
-			public boolean filter(SongEvent songEvent) throws Exception {
-				return songEvent.getSong().getAuthor().equals("Queen");
-			}
-		});
+		final DataStream<SongEvent> filteredEvents = events.filter(/* INSERT YOUR CODE HERE */);
 
 		// print filtered events
 		filteredEvents.print();

@@ -57,52 +57,17 @@ public class AlertsWithCep {
 				});
 
 		// Create appropriate pattern
-		final Pattern<SongEvent, SongEvent> pattern = Pattern.<SongEvent>begin(SONG_PLAYED).where(new SimpleCondition<SongEvent>() {
-			@Override
-			public boolean filter(SongEvent songEvent) throws Exception {
-				return songEvent.getType() == SongEventType.PLAY;
-			}
-		}).followedBy(SONG_PAUSED).where(new IterativeCondition<SongEvent>() {
-			@Override
-			public boolean filter(SongEvent songEvent, Context<SongEvent> context) throws Exception {
-
-				if (songEvent.getType() != SongEventType.PAUSE) {
-					return false;
-				}
-
-				final SongEvent songPlayedEvent = context.getEventsForPattern(SONG_PLAYED).iterator().next();
-				return isSameName(songEvent, songPlayedEvent) &&
-				       isShortEnough(songEvent, songPlayedEvent);
-			}
-		});
-
-		// Apply pattern to stream
-		final PatternStream<SongEvent> matchStream = CEP.pattern(songsInEventTime, pattern);
+		final Pattern<SongEvent, SongEvent> pattern = /* INSERT YOUR CODE HERE */
 
 		// Convert match into Alert
 		matchStream.select(new PatternSelectFunction<SongEvent, Alert>() {
 			@Override
 			public Alert select(Map<String, List<SongEvent>> map) throws Exception {
-				final SongEvent start = map.get(SONG_PLAYED).get(0);
-				final SongEvent end = map.get(SONG_PAUSED).get(0);
-
-				return new Alert(
-						start.getSong().getName(),
-						start.getTimestamp(),
-						end.getTimestamp(),
-						start.getUserId());
+				/* INSERT YOUR CODE HERE */
 			}
 		}).print();
 
 		sEnv.execute();
 	}
 
-	private static boolean isSameName(SongEvent songEvent, SongEvent songPlayedEvent) {
-		return songPlayedEvent.getSong().getName().equals(songEvent.getSong().getName());
-	}
-
-	private static boolean isShortEnough(SongEvent songEvent, SongEvent songPlayedEvent) {
-		return Duration.millis(songEvent.getTimestamp() - songPlayedEvent.getTimestamp())
-				       .compareTo(Duration.standardSeconds(15)) < 0;
-	}
 }

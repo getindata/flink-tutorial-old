@@ -51,59 +51,37 @@ public class WindowAggregations {
 		final DataStream<SongEvent> events = sEnv.addSource(new SongsSource());
 
 		final DataStream<SongEvent> eventsInEventTime = events.assignTimestampsAndWatermarks(
-				new AssignerWithPunctuatedWatermarks<SongEvent>() {
-					@Nullable
-					@Override
-					public Watermark checkAndGetNextWatermark(SongEvent songEvent, long lastTimestamp) {
-						return (songEvent.getType() == SongEventType.PLAY) ? new Watermark(lastTimestamp) : null;
-					}
-
-					@Override
-					public long extractTimestamp(SongEvent songEvent, long lastTimestamp) {
-						return songEvent.getTimestamp();
-					}
-				}
+				/* INSERT YOUR CODE HERE */
 		);
 
 		// song plays in user sessions
 		final WindowedStream<SongEvent, Integer, TimeWindow> windowedStream = eventsInEventTime
-				.filter(new FilterFunction<SongEvent>() {
-					@Override
-					public boolean filter(final SongEvent songEvent) throws Exception {
-						return songEvent.getType() == SongEventType.PLAY;
-					}
-				})
-				.keyBy(new KeySelector<SongEvent, Integer>() {
-					@Override
-					public Integer getKey(SongEvent songEvent) throws Exception {
-						return songEvent.getUserId();
-					}
-				})
-				.window(EventTimeSessionWindows.withGap(Time.seconds(5)));
+				.filter(/* INSERT YOUR CODE HERE */)
+				.keyBy(/* INSERT YOUR CODE HERE */)
+				.window(/* INSERT YOUR CODE HERE */);
 
 		final DataStream<UserStatistics> statistics = windowedStream.aggregate(
 				new AggregateFunction<SongEvent, CountAggregator, Long>() {
 					@Override
 					public CountAggregator createAccumulator() {
-						return new CountAggregator();
+						/* INSERT YOUR CODE HERE */
 					}
 
 					@Override
 					public void add(
 							SongEvent songEvent, CountAggregator countAggregator) {
-						countAggregator.add(1);
+						/* INSERT YOUR CODE HERE */
 					}
 
 					@Override
 					public Long getResult(CountAggregator countAggregator) {
-						return countAggregator.getCount();
+						/* INSERT YOUR CODE HERE */
 					}
 
 					@Override
 					public CountAggregator merge(
 							CountAggregator countAggregator, CountAggregator acc1) {
-						countAggregator.add(acc1.getCount());
-						return countAggregator;
+						/* INSERT YOUR CODE HERE */
 					}
 				}, new WindowFunction<Long, UserStatistics, Integer, TimeWindow>() {
 					@Override
@@ -113,18 +91,7 @@ public class WindowAggregations {
 							Iterable<Long> input,
 							Collector<UserStatistics> out) throws Exception {
 
-						long sum = 0;
-						for (Long aLong : input) {
-							sum += aLong;
-						}
-
-						out.collect(
-								new UserStatistics(
-										sum,
-										userId,
-										window.getStart(),
-										window.getEnd())
-						);
+						/* INSERT YOUR CODE HERE */
 					}
 				});
 

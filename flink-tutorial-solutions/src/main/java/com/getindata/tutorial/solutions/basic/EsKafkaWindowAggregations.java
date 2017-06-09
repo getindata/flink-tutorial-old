@@ -159,12 +159,7 @@ public class EsKafkaWindowAggregations {
 				new ElasticsearchSinkFunction<UserStatistics>() {
 					private IndexRequest createIndexRequest(UserStatistics element) throws IOException {
 
-						final XContentBuilder result = jsonBuilder().startObject()
-								.field("userId", element.getUserId())
-								.field("plays", element.getCount())
-								.field("start", element.getStart().toDate())
-								.field("end", element.getEnd().toDate())
-								.endObject();
+						final XContentBuilder result = /* INSERT YOUR CODE HERE */
 
 						return Requests.indexRequest()
 								.index(EsProperties.getIndex("lion"))

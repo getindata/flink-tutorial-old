@@ -76,21 +76,9 @@ public class AdvancedTimeHandling {
 
 				UserStatistics current = state.value();
 				if (current == null) {
-					final Instant startOfWindow = new Instant(songEvent.getTimestamp());
-					final Instant endOfWindow = new Instant(songEvent.getTimestamp()).plus(Duration.standardSeconds(15));
-
-					current = new UserStatistics(
-							songEvent.getUserId(),
-							1,
-							startOfWindow.getMillis(),
-							endOfWindow.getMillis());
-
-					state.update(current);
-					context.timerService().registerEventTimeTimer(startOfWindow.plus(Duration.standardSeconds(5))
-							.getMillis());
-					context.timerService().registerEventTimeTimer(endOfWindow.getMillis());
+					/* INSERT YOUR CODE HERE */
 				} else {
-					current.setCount(current.getCount() + 1);
+					/* INSERT YOUR CODE HERE */
 					state.update(current);
 				}
 
@@ -102,14 +90,7 @@ public class AdvancedTimeHandling {
 				if (current == null) {
 					throw new IllegalStateException("This should not happen!");
 				} else {
-					if (current.getEnd().isAfter(new Instant(timestamp).plus(Duration.standardSeconds(5)))) {
-						ctx.timerService().registerEventTimeTimer(new Instant(timestamp)
-								.plus(Duration.standardSeconds(5))
-								.getMillis());
-					} else if (current.getEnd().equals(new Instant(timestamp))) {
-						state.clear();
-					}
-					out.collect(current);
+					/* INSERT YOUR CODE HERE */
 				}
 			}
 		}).print();
