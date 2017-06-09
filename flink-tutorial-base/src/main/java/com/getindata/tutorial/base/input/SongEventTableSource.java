@@ -23,7 +23,7 @@ import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.AssignerWithPunctuatedWatermarks;
 import org.apache.flink.streaming.api.watermark.Watermark;
-import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer010;
+import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer09;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumerBase;
 import org.apache.flink.streaming.util.serialization.TypeInformationSerializationSchema;
 import org.apache.flink.table.sources.StreamTableSource;
@@ -41,7 +41,7 @@ public class SongEventTableSource implements StreamTableSource<SongEvent> {
 
 	@Override
 	public DataStream<SongEvent> getDataStream(StreamExecutionEnvironment env) {
-		final FlinkKafkaConsumerBase<SongEvent> kafkaSource = new FlinkKafkaConsumer010<>(
+		final FlinkKafkaConsumerBase<SongEvent> kafkaSource = new FlinkKafkaConsumer09<>(
 				KafkaProperties.getTopic(),
 				new TypeInformationSerializationSchema<>(
 						typeInfo,

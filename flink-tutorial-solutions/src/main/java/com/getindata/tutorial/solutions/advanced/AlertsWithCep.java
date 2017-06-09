@@ -18,6 +18,7 @@
 
 package com.getindata.tutorial.solutions.advanced;
 
+import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.cep.CEP;
 import org.apache.flink.cep.PatternSelectFunction;
 import org.apache.flink.cep.PatternStream;
@@ -32,8 +33,8 @@ import com.getindata.tutorial.base.model.SongEvent;
 import com.getindata.tutorial.base.model.SongEventType;
 import com.getindata.tutorial.base.utils.Alert;
 import com.getindata.tutorial.base.utils.shortcuts.Shortcuts;
+import org.joda.time.Duration;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
@@ -47,7 +48,13 @@ public class AlertsWithCep {
 		sEnv.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
 		// You can use prepared code for reading events from kafka
-		final DataStream<SongEvent> songsInEventTime = Shortcuts.getSongsWithTimestamps(sEnv).keyBy(SongEvent::getUserId);
+		final DataStream<SongEvent> songsInEventTime = Shortcuts.getSongsWithTimestamps(sEnv)
+				.keyBy(new KeySelector<SongEvent, Integer>() {
+					@Override
+					public Integer getKey(SongEvent songEvent) throws Exception {
+						return songEvent.getUserId();
+					}
+				});
 
 		// Create appropriate pattern
 		final Pattern<SongEvent, SongEvent> pattern = Pattern.<SongEvent>begin(SONG_PLAYED).where(new SimpleCondition<SongEvent>() {
@@ -95,7 +102,7 @@ public class AlertsWithCep {
 	}
 
 	private static boolean isShortEnough(SongEvent songEvent, SongEvent songPlayedEvent) {
-		return Duration.ofMillis(songEvent.getTimestamp() - songPlayedEvent.getTimestamp())
-				       .compareTo(Duration.ofSeconds(15)) < 0;
+		return Duration.millis(songEvent.getTimestamp() - songPlayedEvent.getTimestamp())
+				       .compareTo(Duration.standardSeconds(15)) < 0;
 	}
 }

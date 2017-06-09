@@ -18,9 +18,9 @@
 
 package com.getindata.tutorial.base.utils;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.time.ZoneId;
+
+import org.joda.time.Duration;
+import org.joda.time.Instant;
 
 import static com.getindata.tutorial.base.utils.DurationUtils.formatDuration;
 
@@ -32,11 +32,10 @@ public class Alert {
 	private long userId;
 
 
-
 	public Alert(String songName, long start, long end, long userId) {
 		this.songName = songName;
-		this.started = Instant.ofEpochMilli(start);
-		this.ended = Instant.ofEpochMilli(end);
+		this.started = new Instant(start);
+		this.ended = new Instant(end);
 		this.userId = userId;
 	}
 
@@ -45,9 +44,9 @@ public class Alert {
 		return "Alert{" +
 		       "songName='" + songName + '\'' +
 		       ", userId=" + userId +
-		       ", started=" + started.atZone(ZoneId.of("Europe/Warsaw")) +
-		       ", ended=" + ended.atZone(ZoneId.of("Europe/Warsaw")) +
-		       ", duration=" + formatDuration(Duration.between(started, ended)) +
+		       ", started=" + started.toString() +
+		       ", ended=" + ended.toString() +
+		       ", duration=" + formatDuration(new Duration(started, ended)) +
 		       '}';
 	}
 }

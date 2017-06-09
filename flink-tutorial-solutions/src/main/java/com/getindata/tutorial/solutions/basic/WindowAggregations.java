@@ -19,6 +19,8 @@
 package com.getindata.tutorial.solutions.basic;
 
 import org.apache.flink.api.common.functions.AggregateFunction;
+import org.apache.flink.api.common.functions.FilterFunction;
+import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.WindowedStream;
@@ -38,9 +40,6 @@ import com.getindata.tutorial.base.utils.CountAggregator;
 import com.getindata.tutorial.base.utils.UserStatistics;
 
 import javax.annotation.Nullable;
-
-import java.time.Instant;
-import java.util.stream.StreamSupport;
 
 public class WindowAggregations {
 
@@ -68,8 +67,18 @@ public class WindowAggregations {
 
 		// song plays in user sessions
 		final WindowedStream<SongEvent, Integer, TimeWindow> windowedStream = eventsInEventTime
-				.filter(ev -> ev.getType() == SongEventType.PLAY)
-				.keyBy(SongEvent::getUserId)
+				.filter(new FilterFunction<SongEvent>() {
+					@Override
+					public boolean filter(final SongEvent songEvent) throws Exception {
+						return songEvent.getType() == SongEventType.PLAY;
+					}
+				})
+				.keyBy(new KeySelector<SongEvent, Integer>() {
+					@Override
+					public Integer getKey(SongEvent songEvent) throws Exception {
+						return songEvent.getUserId();
+					}
+				})
 				.window(EventTimeSessionWindows.withGap(Time.seconds(5)));
 
 		final DataStream<UserStatistics> statistics = windowedStream.aggregate(
@@ -103,12 +112,18 @@ public class WindowAggregations {
 							TimeWindow window,
 							Iterable<Long> input,
 							Collector<UserStatistics> out) throws Exception {
+
+						long sum = 0;
+						for (Long aLong : input) {
+							sum += aLong;
+						}
+
 						out.collect(
 								new UserStatistics(
-										StreamSupport.stream(input.spliterator(), false).mapToLong(c -> c).sum(),
+										sum,
 										userId,
-										Instant.ofEpochMilli(window.getStart()),
-										Instant.ofEpochMilli(window.getEnd()))
+										window.getStart(),
+										window.getEnd())
 						);
 					}
 				});

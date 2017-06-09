@@ -20,23 +20,22 @@ package com.getindata.tutorial.generation;
 
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer010;
+import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer09;
 
+import com.getindata.tutorial.base.input.SongEventJsonSerializationSchema;
 import com.getindata.tutorial.base.input.SongsSource;
 import com.getindata.tutorial.base.kafka.KafkaProperties;
 import com.getindata.tutorial.base.model.SongEvent;
-import com.getindata.tutorial.base.input.SongEventJsonSerializationSchema;
 
 public class JsonGenerationJob {
 	public static void main(String[] args) throws Exception {
 		final StreamExecutionEnvironment sEnv = StreamExecutionEnvironment.getExecutionEnvironment();
 
 		final DataStream<SongEvent> events = sEnv.addSource(new SongsSource());
-		FlinkKafkaProducer010.writeToKafkaWithTimestamps(
-				events,
+		events.addSink(new FlinkKafkaProducer09<>(
 				KafkaProperties.getTopic(),
 				new SongEventJsonSerializationSchema(),
-				KafkaProperties.getKafkaProperties());
+				KafkaProperties.getKafkaProperties()));
 
 		sEnv.execute("Kafka producer");
 	}

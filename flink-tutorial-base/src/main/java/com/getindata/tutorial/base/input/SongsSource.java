@@ -20,14 +20,12 @@ package com.getindata.tutorial.base.input;
 
 import org.apache.flink.shaded.com.google.common.collect.Lists;
 import org.apache.flink.streaming.api.functions.source.RichParallelSourceFunction;
-import org.apache.flink.streaming.api.windowing.time.Time;
 
 import com.getindata.tutorial.base.model.Song;
 import com.getindata.tutorial.base.model.SongEvent;
 import com.getindata.tutorial.base.model.SongEventType;
+import org.joda.time.Duration;
 
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Random;
 
@@ -47,14 +45,10 @@ public class SongsSource extends RichParallelSourceFunction<SongEvent> {
 	);
 
 	private static long toMillis(int minutes, int seconds) {
-		return Duration.ofMinutes(minutes).plus(seconds, ChronoUnit.SECONDS).toMillis();
+		return Duration.standardMinutes(minutes).plus(Duration.standardSeconds(seconds)).getMillis();
 	}
 
 	private boolean isRunning = true;
-
-	public static Time getMaximalLag() {
-		return Time.milliseconds(songs.stream().mapToLong(Song::getLength).max().orElse(0));
-	}
 
 	@Override
 	public void run(SourceContext<SongEvent> sourceContext) throws Exception {

@@ -1,7 +1,8 @@
 package com.getindata.tutorial.base.utils;
 
-import java.time.Duration;
-import java.time.Instant;
+
+import org.joda.time.Duration;
+import org.joda.time.Instant;
 
 import static com.getindata.tutorial.base.utils.DurationUtils.formatDuration;
 
@@ -20,10 +21,6 @@ public class UserStatistics {
 		return count;
 	}
 
-	public Duration getDuration() {
-		return duration;
-	}
-
 	public Instant getStart() {
 		return start;
 	}
@@ -32,12 +29,12 @@ public class UserStatistics {
 		return end;
 	}
 
-	public UserStatistics(long userId, long count, Instant start, Instant end) {
+	public UserStatistics(long userId, long count, long start, long end) {
 		this.count = count;
 		this.userId = userId;
-		this.start = start;
-		this.end = end;
-		this.duration = Duration.between(start, end);
+		this.start = new Instant(start);
+		this.end = new Instant(end);
+		this.duration = new Duration(this.start, this.end);
 	}
 
 	public void setUserId(long userId) {

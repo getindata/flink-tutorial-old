@@ -19,8 +19,10 @@
 package com.getindata.tutorial.solutions.basic;
 
 import org.apache.flink.api.common.functions.AggregateFunction;
+import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.functions.RuntimeContext;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.WindowedStream;
@@ -34,7 +36,7 @@ import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.streaming.connectors.elasticsearch.ElasticsearchSinkFunction;
 import org.apache.flink.streaming.connectors.elasticsearch.RequestIndexer;
 import org.apache.flink.streaming.connectors.elasticsearch5.ElasticsearchSink;
-import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer010;
+import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer09;
 import org.apache.flink.streaming.util.serialization.TypeInformationSerializationSchema;
 import org.apache.flink.util.Collector;
 
@@ -51,12 +53,6 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import javax.annotation.Nullable;
 
 import java.io.IOException;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.StreamSupport;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
@@ -68,7 +64,7 @@ public class EsKafkaWindowAggregations {
 
 		// create a stream of events from source
 		final DataStream<SongEvent> events = sEnv.addSource(
-				new FlinkKafkaConsumer010<SongEvent>(
+				new FlinkKafkaConsumer09<>(
 						"songs",
 						new TypeInformationSerializationSchema<>(
 								TypeInformation.of(SongEvent.class),
@@ -95,8 +91,18 @@ public class EsKafkaWindowAggregations {
 
 		// song plays in user sessions
 		final WindowedStream<SongEvent, Integer, TimeWindow> windowedStream = eventsInEventTime
-				.filter(ev -> ev.getType() == SongEventType.PLAY)
-				.keyBy(SongEvent::getUserId)
+				.filter(new FilterFunction<SongEvent>() {
+					@Override
+					public boolean filter(final SongEvent songEvent) throws Exception {
+						return songEvent.getType() == SongEventType.PLAY;
+					}
+				})
+				.keyBy(new KeySelector<SongEvent, Integer>() {
+					@Override
+					public Integer getKey(SongEvent songEvent) throws Exception {
+						return songEvent.getUserId();
+					}
+				})
 				.window(EventTimeSessionWindows.withGap(Time.seconds(5)));
 
 		final DataStream<UserStatistics> statistics = windowedStream.aggregate(
@@ -133,13 +139,17 @@ public class EsKafkaWindowAggregations {
 							TimeWindow window,
 							Iterable<Long> input,
 							Collector<UserStatistics> out) throws Exception {
+						long sum = 0;
+						for (Long aLong : input) {
+							sum += aLong;
+						}
+
 						out.collect(
 								new UserStatistics(
-										StreamSupport.stream(input.spliterator(), false).mapToLong(c -> c).sum(),
+										sum,
 										userId,
-										Instant.ofEpochMilli(window.getStart()),
-										Instant.ofEpochMilli(window.getEnd())
-								)
+										window.getStart(),
+										window.getEnd())
 						);
 					}
 				});
@@ -152,8 +162,8 @@ public class EsKafkaWindowAggregations {
 						final XContentBuilder result = jsonBuilder().startObject()
 								.field("userId", element.getUserId())
 								.field("plays", element.getCount())
-								.field("start", Date.from(element.getStart()))
-								.field("end", Date.from(element.getEnd()))
+								.field("start", element.getStart().toDate())
+								.field("end", element.getEnd().toDate())
 								.endObject();
 
 						return Requests.indexRequest()

@@ -18,11 +18,12 @@
 
 package com.getindata.tutorial.base.utils;
 
-import java.time.Duration;
+
+import org.joda.time.Duration;
 
 public class DurationUtils {
 	public static String formatDuration(Duration duration) {
-		long seconds = duration.getSeconds();
+		long seconds = duration.getStandardSeconds();
 		long absSeconds = Math.abs(seconds);
 		String positive = String.format(
 				"%d:%02d:%02d",

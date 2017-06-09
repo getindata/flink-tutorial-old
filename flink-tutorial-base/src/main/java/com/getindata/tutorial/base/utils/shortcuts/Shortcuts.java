@@ -23,7 +23,7 @@ import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.AssignerWithPunctuatedWatermarks;
 import org.apache.flink.streaming.api.watermark.Watermark;
-import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer010;
+import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer09;
 import org.apache.flink.streaming.util.serialization.TypeInformationSerializationSchema;
 
 import com.getindata.tutorial.base.kafka.KafkaProperties;
@@ -38,7 +38,7 @@ public class Shortcuts {
 
 		// create a stream of events from source
 		final DataStream<SongEvent> events = sEnv.addSource(
-				new FlinkKafkaConsumer010<>(
+				new FlinkKafkaConsumer09<>(
 						"songs",
 						new TypeInformationSerializationSchema<>(
 								TypeInformation.of(SongEvent.class),
