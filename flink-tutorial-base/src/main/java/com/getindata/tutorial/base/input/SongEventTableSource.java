@@ -18,7 +18,9 @@
 
 package com.getindata.tutorial.base.input;
 
+import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.AssignerWithPunctuatedWatermarks;
@@ -26,7 +28,9 @@ import org.apache.flink.streaming.api.watermark.Watermark;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer09;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumerBase;
 import org.apache.flink.streaming.util.serialization.TypeInformationSerializationSchema;
+import org.apache.flink.table.sources.DefinedRowtimeAttribute;
 import org.apache.flink.table.sources.StreamTableSource;
+import org.apache.flink.types.Row;
 
 import com.getindata.tutorial.base.kafka.KafkaProperties;
 import com.getindata.tutorial.base.model.SongEvent;
@@ -34,13 +38,12 @@ import com.getindata.tutorial.base.model.SongEventType;
 
 import javax.annotation.Nullable;
 
-public class SongEventTableSource implements StreamTableSource<SongEvent> {
-
+public class SongEventTableSource implements StreamTableSource<Row>, DefinedRowtimeAttribute {
 
 	private static final TypeInformation<SongEvent> typeInfo = TypeInformation.of(SongEvent.class);
 
 	@Override
-	public DataStream<SongEvent> getDataStream(StreamExecutionEnvironment env) {
+	public DataStream<Row> getDataStream(StreamExecutionEnvironment env) {
 		final FlinkKafkaConsumerBase<SongEvent> kafkaSource = new FlinkKafkaConsumer09<>(
 				KafkaProperties.getTopic(),
 				new TypeInformationSerializationSchema<>(
@@ -62,16 +65,35 @@ public class SongEventTableSource implements StreamTableSource<SongEvent> {
 				}
 		);
 
-		return env.addSource(kafkaSource);
+
+		return env.addSource(kafkaSource).map(new MapFunction<SongEvent, Row>() {
+			@Override
+			public Row map(SongEvent songEvent) throws Exception {
+				return Row.of(
+						songEvent.getSong().getName(),
+						songEvent.getSong().getLength(),
+						songEvent.getSong().getAuthor(),
+						songEvent.getUserId(),
+						songEvent.getType().toString());
+			}
+		}).returns(getReturnType());
 	}
 
 	@Override
-	public TypeInformation<SongEvent> getReturnType() {
-		return typeInfo;
+	public TypeInformation<Row> getReturnType() {
+		return Types.ROW_NAMED(
+				new String[]{"song_name", "song_length", "song_author", "userId", "type"},
+				Types.STRING, Types.LONG, Types.STRING, Types.INT, Types.STRING
+		);
 	}
 
 	@Override
 	public String explainSource() {
 		return "SongEventTable";
+	}
+
+	@Override
+	public String getRowtimeAttribute() {
+		return "t";
 	}
 }

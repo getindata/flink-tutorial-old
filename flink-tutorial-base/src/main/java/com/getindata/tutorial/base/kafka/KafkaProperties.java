@@ -25,13 +25,15 @@ public class KafkaProperties {
 
 	public static Properties getKafkaProperties() {
 		final Properties properties = new Properties();
+//		final String brokerAddress = System.getenv("KAFKA_BROKER_ADDRESS");
 		properties.setProperty("bootstrap.servers", "localhost:9092");
 
 		return properties;
 	}
 
 	public static String getTopic() {
-		return "songs";
+		final String user = System.getProperty("user.name");
+		return "songs_" + user;
 	}
 
 	private KafkaProperties() {

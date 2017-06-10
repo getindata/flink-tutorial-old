@@ -1,0 +1,15 @@
+{
+  "settings" : {
+    "number_of_shards" : 1
+  },
+  "mappings" : {
+    "statistics_lion" : {
+      "properties" : {
+        "userId" : { "type" : "text" },
+        "plays" : { "type" : "long" },
+        "start" : { "type" : "date" },
+        "end" : { "type" : "date" }
+      }
+    }
+  }
+}

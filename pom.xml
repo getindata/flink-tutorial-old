@@ -238,7 +238,7 @@ under the License.
 									<exclude>org.apache.flink:flink-metrics-core</exclude>
 									<exclude>org.apache.flink:flink-metrics-jmx</exclude>
 									<exclude>org.apache.flink:flink-statebackend-rocksdb_2.10</exclude>
-                                    <exclude>org.apache.flink:flink-table_2.10</exclude>
+                                    <!--<exclude>org.apache.flink:flink-table_2.10</exclude>-->
 
 									<!-- Also exclude very big transitive dependencies of Flink
 
@@ -256,6 +256,7 @@ under the License.
 									<exclude>com.data-artisans:flakka-slf4j_*</exclude>
 									<exclude>io.netty:netty-all</exclude>
 									<exclude>io.netty:netty</exclude>
+                                    <exclude>io.netty:*</exclude>
 									<exclude>commons-fileupload:commons-fileupload</exclude>
 									<exclude>org.apache.avro:avro</exclude>
 									<exclude>commons-collections:commons-collections</exclude>
@@ -331,8 +332,8 @@ under the License.
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.6.1</version>
 				<configuration>
-					<source>1.7</source> <!-- If you want to use Java 8, change this to "1.8" -->
-					<target>1.7</target> <!-- If you want to use Java 8, change this to "1.8" -->
+					<source>1.8</source> <!-- If you want to use Java 8, change this to "1.8" -->
+					<target>1.8</target> <!-- If you want to use Java 8, change this to "1.8" -->
 				</configuration>
 			</plugin>
 		</plugins>

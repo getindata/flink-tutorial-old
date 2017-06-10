@@ -167,8 +167,8 @@ public class EsKafkaWindowAggregations {
 								.endObject();
 
 						return Requests.indexRequest()
-								.index("my-index")
-								.type("my-type")
+								.index(EsProperties.getIndex())
+								.type(EsProperties.getType())
 								.source(result);
 					}
 

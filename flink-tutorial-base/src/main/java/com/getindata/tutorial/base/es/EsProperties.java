@@ -38,10 +38,30 @@ public class EsProperties {
 		return config;
 	}
 
+	public static String getIndex() {
+		final String user = System.getProperty("user.name");
+		return "statistics_" + user;
+	}
+
+	public static String getType() {
+		return "statistics";
+	}
+
 	public static List<InetSocketAddress> getEsAddresses() throws UnknownHostException {
 		List<InetSocketAddress> transportAddresses = new ArrayList<>();
-		transportAddresses.add(new InetSocketAddress(InetAddress.getByName("127.0.0.1"), 9300));
-		transportAddresses.add(new InetSocketAddress(InetAddress.getByName("10.2.3.1"), 9300));
+
+//		final String esNodes = System.getenv("ES_NODE");
+//
+//		final String[] nodes = esNodes.split(",");
+//
+//		for (String node : nodes) {
+//			final String[] nodeParams = node.split(":");
+//			transportAddresses.add(new InetSocketAddress(
+//					InetAddress.getByName(nodeParams[0]),
+//					Integer.getInteger(nodeParams[1])));
+//		}
+
+		transportAddresses.add(new InetSocketAddress("localhost", 9300));
 
 		return transportAddresses;
 	}
