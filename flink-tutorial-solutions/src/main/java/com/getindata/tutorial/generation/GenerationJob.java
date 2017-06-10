@@ -35,7 +35,7 @@ public class GenerationJob {
 
 		final DataStream<SongEvent> events = sEnv.addSource(new SongsSource());
 		events.addSink(new FlinkKafkaProducer09<>(
-				KafkaProperties.getTopic(),
+				KafkaProperties.getTopic("lion"),
 				new TypeInformationSerializationSchema<>(TypeInformation.of(SongEvent.class), sEnv.getConfig()),
 				KafkaProperties.getKafkaProperties()));
 

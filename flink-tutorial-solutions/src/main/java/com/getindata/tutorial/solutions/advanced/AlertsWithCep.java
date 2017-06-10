@@ -48,7 +48,7 @@ public class AlertsWithCep {
 		sEnv.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
 		// You can use prepared code for reading events from kafka
-		final DataStream<SongEvent> songsInEventTime = Shortcuts.getSongsWithTimestamps(sEnv)
+		final DataStream<SongEvent> songsInEventTime = Shortcuts.getSongsWithTimestamps(sEnv, "lion")
 				.keyBy(new KeySelector<SongEvent, Integer>() {
 					@Override
 					public Integer getKey(SongEvent songEvent) throws Exception {

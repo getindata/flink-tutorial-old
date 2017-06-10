@@ -34,12 +34,12 @@ import javax.annotation.Nullable;
 
 public class Shortcuts {
 
-	public static DataStream<SongEvent> getSongsWithTimestamps(StreamExecutionEnvironment sEnv) {
+	public static DataStream<SongEvent> getSongsWithTimestamps(StreamExecutionEnvironment sEnv, String user) {
 
 		// create a stream of events from source
 		final DataStream<SongEvent> events = sEnv.addSource(
 				new FlinkKafkaConsumer09<>(
-						"songs",
+						KafkaProperties.getTopic(user),
 						new TypeInformationSerializationSchema<>(
 								TypeInformation.of(SongEvent.class),
 								sEnv.getConfig()),

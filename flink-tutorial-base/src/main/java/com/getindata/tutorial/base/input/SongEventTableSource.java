@@ -45,7 +45,7 @@ public class SongEventTableSource implements StreamTableSource<Row>, DefinedRowt
 	@Override
 	public DataStream<Row> getDataStream(StreamExecutionEnvironment env) {
 		final FlinkKafkaConsumerBase<SongEvent> kafkaSource = new FlinkKafkaConsumer09<>(
-				KafkaProperties.getTopic(),
+				KafkaProperties.getTopic("lion"),
 				new TypeInformationSerializationSchema<>(
 						typeInfo,
 						env.getConfig()),

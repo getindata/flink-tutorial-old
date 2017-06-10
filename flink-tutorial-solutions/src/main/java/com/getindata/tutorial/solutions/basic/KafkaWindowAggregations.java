@@ -53,7 +53,7 @@ public class KafkaWindowAggregations {
 		// create a stream of events from source
 		final DataStream<SongEvent> events = sEnv.addSource(
 				new FlinkKafkaConsumer09<>(
-						KafkaProperties.getTopic(),
+						KafkaProperties.getTopic("lion"),
 						new TypeInformationSerializationSchema<>(
 								TypeInformation.of(SongEvent.class),
 								sEnv.getConfig()),

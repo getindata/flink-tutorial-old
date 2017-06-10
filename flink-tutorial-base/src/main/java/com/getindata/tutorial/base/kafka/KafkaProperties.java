@@ -20,19 +20,16 @@ package com.getindata.tutorial.base.kafka;
 
 import java.util.Properties;
 
-//TODO set appropriate parameters
 public class KafkaProperties {
 
 	public static Properties getKafkaProperties() {
 		final Properties properties = new Properties();
-//		final String brokerAddress = System.getenv("KAFKA_BROKER_ADDRESS");
-		properties.setProperty("bootstrap.servers", "localhost:9092");
+		properties.setProperty("bootstrap.servers", "172.17.0.4:9092");
 
 		return properties;
 	}
 
-	public static String getTopic() {
-		final String user = System.getProperty("user.name");
+	public static String getTopic(String user) {
 		return "songs_" + user;
 	}
 

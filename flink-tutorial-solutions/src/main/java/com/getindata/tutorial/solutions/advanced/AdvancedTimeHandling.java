@@ -42,7 +42,7 @@ public class AdvancedTimeHandling {
 		sEnv.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
 		// You can use prepared code for reading events from kafka
-		final DataStream<SongEvent> songsInEventTime = Shortcuts.getSongsWithTimestamps(sEnv)
+		final DataStream<SongEvent> songsInEventTime = Shortcuts.getSongsWithTimestamps(sEnv, "lion")
 				.filter(new FilterFunction<SongEvent>() {
 					@Override
 					public boolean filter(final SongEvent songEvent) throws Exception {
