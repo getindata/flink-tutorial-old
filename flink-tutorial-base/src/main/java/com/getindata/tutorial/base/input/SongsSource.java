@@ -58,12 +58,14 @@ public class SongsSource extends RichParallelSourceFunction<SongEvent> {
   }
 
   public SongsSource() {
-    this(10, Duration.ofMinutes(2), Duration.ofSeconds(20), 10);
+    this(10, Duration.ofMinutes(2), Duration.ofMinutes(5), 10);
   }
 
   @Override
   public void run(SourceContext<SongEvent> sourceContext) throws Exception {
     final List<Iterator<SongEvent>> sessions = IntStream.rangeClosed(1, numberOfUsers)
+        .filter(i -> i % getRuntimeContext().getNumberOfParallelSubtasks() == getRuntimeContext()
+            .getIndexOfThisSubtask())
         .mapToObj(
             i -> new UserSessions(i, sessionGap, Instant.now().toEpochMilli()).getSongs()
                 .iterator())
