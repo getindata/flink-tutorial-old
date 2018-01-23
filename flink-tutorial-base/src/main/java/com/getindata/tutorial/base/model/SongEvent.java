@@ -1,5 +1,8 @@
 package com.getindata.tutorial.base.model;
 
+
+import java.time.Instant;
+
 public class SongEvent {
 	private Song song;
 	private long timestamp;
@@ -52,7 +55,7 @@ public class SongEvent {
 	public String toString() {
 		return "SongEvent{" +
 		       "song=" + song +
-		       ", timestamp=" + timestamp +
+		       ", timestamp=" + Instant.ofEpochMilli(timestamp) +
 		       ", type=" + type +
 		       ", userId=" + userId +
 		       '}';

@@ -18,73 +18,76 @@
 
 package com.getindata.tutorial.base.input;
 
-import org.apache.flink.shaded.com.google.common.collect.Lists;
-import org.apache.flink.streaming.api.functions.source.RichParallelSourceFunction;
-
-import com.getindata.tutorial.base.model.Song;
+import com.getindata.tutorial.base.input.utils.MergedIterator;
+import com.getindata.tutorial.base.input.utils.UserSessions;
 import com.getindata.tutorial.base.model.SongEvent;
-import com.getindata.tutorial.base.model.SongEventType;
-import org.joda.time.Duration;
-
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import org.apache.flink.streaming.api.functions.source.RichParallelSourceFunction;
 
 public class SongsSource extends RichParallelSourceFunction<SongEvent> {
 
-	private static final List<Song> songs = Lists.newArrayList(
-			new Song(toMillis(2, 40), "Yellow Submarine", "The Beatles"),
-			new Song(toMillis(2, 59), "Get Off Of My Cloud", "The Rolling Stones"),
-			new Song(toMillis(5, 28), "Let It Bleed", "The Rolling Stones"),
-			new Song(toMillis(3, 51), "Dancing Queen", "Abba"),
-			new Song(toMillis(3, 53), "Rolling in the Deep", "Adele"),
-			new Song(toMillis(3, 11), "Killer Queen", "Queen"),
-			new Song(toMillis(3, 54), "California Gurls", "Katy Perry"),
-			new Song(toMillis(4, 57), "Silent All These Years", "Tori Amos"),
-			new Song(toMillis(6, 6), "Bohemian Rhapsody", "Queen"),
-			new Song(toMillis(4, 32), "I want to break free", "Queen")
-	);
+  private boolean isRunning = true;
 
-	private static long toMillis(int minutes, int seconds) {
-		return Duration.standardMinutes(minutes).plus(Duration.standardSeconds(seconds)).getMillis();
-	}
+  private final int numberOfUsers;
 
-	private boolean isRunning = true;
+  private final Duration sessionGap;
 
-	@Override
-	public void run(SourceContext<SongEvent> sourceContext) throws Exception {
-		while (isRunning) {
-			final Random random = new Random();
+  private final Duration outOfOrderness;
 
-			int userId = random.nextInt(50);
-			Song song = songs.get(random.nextInt(songs.size()));
+  private final int speed;
 
-			double caseExample = random.nextDouble();
+  /**
+   * Creates a source that generates {@link SongEvent}s. You can configure with few parameters
+   *
+   * @param numberOfUsers number of users for which the events will be generated
+   * @param sessionGap gap in time between last event in a single user session and the next session
+   * @param outOfOrderness time that events for users with event id will be delayed in contrast to other users events
+   * @param speed speed of events generation (max 100). The smaller the faster events will be generated
+   */
+  public SongsSource(int numberOfUsers, Duration sessionGap, Duration outOfOrderness, int speed) {
+    this.numberOfUsers = numberOfUsers;
+    this.sessionGap = sessionGap;
+    this.outOfOrderness = outOfOrderness;
+    this.speed = Math.min(Math.max(1, speed), 100);
+  }
 
-			final long timestamp = System.currentTimeMillis();
-			if (caseExample < 0.6) {
-				sourceContext.collect(new SongEvent(song, timestamp, SongEventType.PLAY, userId));
-			} else if (caseExample < 0.9) {
-				sourceContext.collect(new SongEvent(song, timestamp, SongEventType.PLAY, userId));
-				sourceContext.collect(new SongEvent(
-						song,
-						timestamp + random.nextInt((int) song.getLength()),
-						SongEventType.SKIP,
-						userId));
-			} else {
-				sourceContext.collect(new SongEvent(song, timestamp, SongEventType.PLAY, userId));
-				sourceContext.collect(new SongEvent(
-						song,
-						timestamp + random.nextInt((int) song.getLength()),
-						SongEventType.PAUSE,
-						userId));
-			}
+  public SongsSource() {
+    this(10, Duration.ofMinutes(2), Duration.ofSeconds(20), 10);
+  }
 
-			Thread.sleep(200);
-		}
-	}
+  @Override
+  public void run(SourceContext<SongEvent> sourceContext) throws Exception {
+    final List<Iterator<SongEvent>> sessions = IntStream.rangeClosed(1, numberOfUsers)
+        .mapToObj(
+            i -> new UserSessions(i, sessionGap, Instant.now().toEpochMilli()).getSongs()
+                .iterator())
+        .collect(Collectors.toList());
 
-	@Override
-	public void cancel() {
-		isRunning = false;
-	}
+    final MergedIterator<SongEvent> mergedIterator = new MergedIterator<>(sessions,
+        Comparator.comparingLong(songEvent -> {
+              if (songEvent.getUserId() % 2 == 0) {
+                return songEvent.getTimestamp();
+              } else {
+                return songEvent.getTimestamp() + outOfOrderness.toMillis();
+              }
+            }
+        ));
+
+    while (isRunning & mergedIterator.hasNext()) {
+      sourceContext.collect(mergedIterator.next());
+      Thread.sleep(20 * speed);
+    }
+
+  }
+
+  @Override
+  public void cancel() {
+    this.isRunning = false;
+  }
 }

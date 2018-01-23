@@ -1,20 +1,20 @@
 package com.getindata.tutorial.base.model;
 
 public class Song {
-	private long length;
+	private int length;
 	private String name;
 	private String author;
 
 	public Song() {
 	}
 
-	public Song(long length, String name, String author) {
+	public Song(int length, String name, String author) {
 		this.length = length;
 		this.name = name;
 		this.author = author;
 	}
 
-	public long getLength() {
+	public int getLength() {
 		return length;
 	}
 
@@ -26,7 +26,7 @@ public class Song {
 		return author;
 	}
 
-	public void setLength(long length) {
+	public void setLength(int length) {
 		this.length = length;
 	}
 
