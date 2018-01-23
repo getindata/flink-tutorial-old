@@ -58,7 +58,7 @@ public class SongsSource extends RichParallelSourceFunction<SongEvent> {
   }
 
   public SongsSource() {
-    this(10, Duration.ofMinutes(2), Duration.ofMinutes(5), 10);
+    this(10, Duration.ofMinutes(20), Duration.ofMinutes(5), 10);
   }
 
   @Override
