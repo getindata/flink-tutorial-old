@@ -18,7 +18,7 @@ public class FilterSongs {
 		final DataStream<SongEvent> filteredEvents = events.filter(new FilterFunction<SongEvent>() {
 			@Override
 			public boolean filter(SongEvent songEvent) throws Exception {
-				return songEvent.getSong().getAuthor().equals("Queen");
+				//TODO fill in the code
 			}
 		});
 

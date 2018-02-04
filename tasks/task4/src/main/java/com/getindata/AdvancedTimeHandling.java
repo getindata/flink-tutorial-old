@@ -43,12 +43,6 @@ public class AdvancedTimeHandling {
 
     // You can use prepared code for reading events from kafka
     final DataStream<SongEvent> songsInEventTime = Shortcuts.getSongsWithTimestamps(sEnv, "lion")
-        .filter(new FilterFunction<SongEvent>() {
-          @Override
-          public boolean filter(final SongEvent songEvent) throws Exception {
-            return songEvent.getUserId() == 1;
-          }
-        })
         .keyBy(new KeySelector<SongEvent, Integer>() {
           @Override
           public Integer getKey(SongEvent songEvent) throws Exception {
@@ -76,24 +70,9 @@ public class AdvancedTimeHandling {
 
         UserStatistics current = state.value();
         if (current == null) {
-          final Instant startOfWindow = new Instant(songEvent.getTimestamp());
-          final Instant endOfWindow = new Instant(songEvent.getTimestamp())
-              .plus(Duration.standardMinutes(15));
-
-          current = new UserStatistics(
-              songEvent.getUserId(),
-              1,
-              startOfWindow.getMillis(),
-              endOfWindow.getMillis());
-
-          state.update(current);
-          context.timerService()
-              .registerEventTimeTimer(startOfWindow.plus(Duration.standardSeconds(30))
-                  .getMillis());
-          context.timerService().registerEventTimeTimer(endOfWindow.getMillis());
+          //TODO fill in the code
         } else {
-          current.setCount(current.getCount() + 1);
-          state.update(current);
+          //TODO fill in the code
         }
 
       }
@@ -105,14 +84,7 @@ public class AdvancedTimeHandling {
         if (current == null) {
           throw new IllegalStateException("This should not happen!");
         } else {
-          if (current.getEnd().isAfter(new Instant(timestamp).plus(Duration.standardSeconds(30)))) {
-            ctx.timerService().registerEventTimeTimer(new Instant(timestamp)
-                .plus(Duration.standardSeconds(30))
-                .getMillis());
-          } else if (current.getEnd().equals(new Instant(timestamp))) {
-            state.clear();
-          }
-          out.collect(current);
+          //TODO fill in the code
         }
       }
     }).print();
