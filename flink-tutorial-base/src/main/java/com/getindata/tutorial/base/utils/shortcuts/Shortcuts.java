@@ -52,7 +52,7 @@ public class Shortcuts {
 					@Nullable
 					@Override
 					public Watermark checkAndGetNextWatermark(SongEvent songEvent, long lastTimestamp) {
-						return (songEvent.getType() == SongEventType.PLAY) ? new Watermark(lastTimestamp) : null;
+						return songEvent.getUserId() % 2 == 1 ? new Watermark(songEvent.getTimestamp()) : null;
 					}
 
 					@Override
