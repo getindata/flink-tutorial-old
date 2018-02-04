@@ -1,4 +1,4 @@
-package com.getindata.tutorial.solutions.basic;
+package com.getindata.task1;
 
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.streaming.api.datastream.DataStream;

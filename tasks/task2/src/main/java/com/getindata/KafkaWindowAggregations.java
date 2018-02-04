@@ -16,11 +16,10 @@
  * limitations under the License.
  */
 
-package com.getindata.tutorial.solutions.basic;
+package com.getindata;
 
 import org.apache.flink.api.common.functions.AggregateFunction;
 import org.apache.flink.api.common.functions.FilterFunction;
-import org.apache.flink.api.common.functions.RuntimeContext;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.streaming.api.TimeCharacteristic;
@@ -33,30 +32,19 @@ import org.apache.flink.streaming.api.watermark.Watermark;
 import org.apache.flink.streaming.api.windowing.assigners.EventTimeSessionWindows;
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
-import org.apache.flink.streaming.connectors.elasticsearch.ElasticsearchSinkFunction;
-import org.apache.flink.streaming.connectors.elasticsearch.RequestIndexer;
-import org.apache.flink.streaming.connectors.elasticsearch5.ElasticsearchSink;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer09;
 import org.apache.flink.streaming.util.serialization.TypeInformationSerializationSchema;
 import org.apache.flink.util.Collector;
 
-import com.getindata.tutorial.base.es.EsProperties;
 import com.getindata.tutorial.base.kafka.KafkaProperties;
 import com.getindata.tutorial.base.model.SongEvent;
 import com.getindata.tutorial.base.model.SongEventType;
 import com.getindata.tutorial.base.utils.CountAggregator;
 import com.getindata.tutorial.base.utils.UserStatistics;
-import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.client.Requests;
-import org.elasticsearch.common.xcontent.XContentBuilder;
 
 import javax.annotation.Nullable;
 
-import java.io.IOException;
-
-import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
-
-public class EsKafkaWindowAggregations {
+public class KafkaWindowAggregations {
 
 	public static void main(String[] args) throws Exception {
 		final StreamExecutionEnvironment sEnv = StreamExecutionEnvironment.getExecutionEnvironment();
@@ -73,7 +61,6 @@ public class EsKafkaWindowAggregations {
 				)
 		);
 
-		// assign timestamps and watermark generation
 		final DataStream<SongEvent> eventsInEventTime = events.assignTimestampsAndWatermarks(
 				new AssignerWithPunctuatedWatermarks<SongEvent>() {
 					@Nullable
@@ -106,7 +93,6 @@ public class EsKafkaWindowAggregations {
 				.window(EventTimeSessionWindows.withGap(Time.seconds(5)));
 
 		final DataStream<UserStatistics> statistics = windowedStream.aggregate(
-				// pre-aggregate song plays
 				new AggregateFunction<SongEvent, CountAggregator, Long>() {
 					@Override
 					public CountAggregator createAccumulator() {
@@ -130,9 +116,7 @@ public class EsKafkaWindowAggregations {
 						countAggregator.add(acc1.getCount());
 						return countAggregator;
 					}
-				},
-				// create user statistics for a session
-				new WindowFunction<Long, UserStatistics, Integer, TimeWindow>() {
+				}, new WindowFunction<Long, UserStatistics, Integer, TimeWindow>() {
 					@Override
 					public void apply(
 							Integer userId,
@@ -154,33 +138,7 @@ public class EsKafkaWindowAggregations {
 					}
 				});
 
-		//write into elasticsearch
-		statistics.addSink(new ElasticsearchSink<>(EsProperties.getEsProperties(), EsProperties.getEsAddresses(),
-				new ElasticsearchSinkFunction<UserStatistics>() {
-					private IndexRequest createIndexRequest(UserStatistics element) throws IOException {
-
-						final XContentBuilder result = jsonBuilder().startObject()
-								.field("userId", element.getUserId())
-								.field("plays", element.getCount())
-								.field("start", element.getStart().toDate())
-								.field("end", element.getEnd().toDate())
-								.endObject();
-
-						return Requests.indexRequest()
-								.index(EsProperties.getIndex("lion"))
-								.type(EsProperties.getType())
-								.source(result);
-					}
-
-					@Override
-					public void process(UserStatistics element, RuntimeContext ctx, RequestIndexer indexer) {
-						try {
-							indexer.add(createIndexRequest(element));
-						} catch (IOException e) {
-							throw new RuntimeException(e);
-						}
-					}
-				}));
+		statistics.print();
 
 		// execute streams
 		sEnv.execute();

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.getindata.tutorial.solutions.basic;
+package com.getindata;
 
 import org.apache.flink.api.common.functions.AggregateFunction;
 import org.apache.flink.api.common.functions.FilterFunction;
