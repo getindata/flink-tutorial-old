@@ -78,7 +78,7 @@ public class AdvancedTimeHandling {
         if (current == null) {
           final Instant startOfWindow = new Instant(songEvent.getTimestamp());
           final Instant endOfWindow = new Instant(songEvent.getTimestamp())
-              .plus(Duration.standardSeconds(15));
+              .plus(Duration.standardMinutes(15));
 
           current = new UserStatistics(
               songEvent.getUserId(),
@@ -88,7 +88,7 @@ public class AdvancedTimeHandling {
 
           state.update(current);
           context.timerService()
-              .registerEventTimeTimer(startOfWindow.plus(Duration.standardSeconds(5))
+              .registerEventTimeTimer(startOfWindow.plus(Duration.standardSeconds(30))
                   .getMillis());
           context.timerService().registerEventTimeTimer(endOfWindow.getMillis());
         } else {
@@ -105,9 +105,9 @@ public class AdvancedTimeHandling {
         if (current == null) {
           throw new IllegalStateException("This should not happen!");
         } else {
-          if (current.getEnd().isAfter(new Instant(timestamp).plus(Duration.standardSeconds(5)))) {
+          if (current.getEnd().isAfter(new Instant(timestamp).plus(Duration.standardSeconds(30)))) {
             ctx.timerService().registerEventTimeTimer(new Instant(timestamp)
-                .plus(Duration.standardSeconds(5))
+                .plus(Duration.standardSeconds(30))
                 .getMillis());
           } else if (current.getEnd().equals(new Instant(timestamp))) {
             state.clear();

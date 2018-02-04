@@ -77,7 +77,7 @@ public class WindowAggregations {
             return songEvent.getUserId();
           }
         })
-        .window(EventTimeSessionWindows.withGap(Time.seconds(5)));
+        .window(EventTimeSessionWindows.withGap(Time.minutes(5)));
 
     final DataStream<UserStatistics> statistics = windowedStream.aggregate(
         new AggregateFunction<SongEvent, CountAggregator, Long>() {
