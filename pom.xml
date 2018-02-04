@@ -37,9 +37,7 @@ under the License.
   <modules>
     <module>flink-tutorial-base</module>
     <module>flink-tutorial-solutions</module>
-    <module>tasks/task1</module>
-    <module>tasks/task2</module>
-    <module>tasks/task3</module>
+    <module>tasks</module>
   </modules>
 
   <dependencies>
@@ -186,6 +184,47 @@ under the License.
         </plugins>
       </build>
     </profile>
+
+    <profile>
+      <id>vendor-repos</id>
+      <!-- Add vendor maven repositories -->
+      <repositories>
+        <!-- Cloudera -->
+        <repository>
+          <id>cloudera-releases</id>
+          <url>https://repository.cloudera.com/artifactory/cloudera-repos</url>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+        </repository>
+        <!-- Hortonworks -->
+        <repository>
+          <id>HDPReleases</id>
+          <name>HDP Releases</name>
+          <url>http://repo.hortonworks.com/content/repositories/releases/</url>
+          <snapshots><enabled>false</enabled></snapshots>
+          <releases><enabled>true</enabled></releases>
+        </repository>
+        <repository>
+          <id>HortonworksJettyHadoop</id>
+          <name>HDP Jetty</name>
+          <url>http://repo.hortonworks.com/content/repositories/jetty-hadoop</url>
+          <snapshots><enabled>false</enabled></snapshots>
+          <releases><enabled>true</enabled></releases>
+        </repository>
+        <!-- MapR -->
+        <repository>
+          <id>mapr-releases</id>
+          <url>http://repository.mapr.com/maven/</url>
+          <snapshots><enabled>false</enabled></snapshots>
+          <releases><enabled>true</enabled></releases>
+        </repository>
+      </repositories>
+    </profile>
+
   </profiles>
 
   <build>
