@@ -18,14 +18,16 @@
 
 package com.getindata.tutorial.base.input.utils;
 
+import static org.apache.flink.shaded.guava18.com.google.common.collect.Lists.newArrayList;
+
 import com.getindata.tutorial.base.model.Song;
 import java.util.List;
-import org.apache.flink.shaded.com.google.common.collect.Lists;
+import org.apache.flink.shaded.guava18.com.google.common.collect.Lists;
 import org.joda.time.Duration;
 
 class Songs {
 
-  static final List<Song> SONGS = Lists.newArrayList(
+  static final List<Song> SONGS = newArrayList(
       new Song(toMillis(2, 40), "Yellow Submarine", "The Beatles"),
       new Song(toMillis(2, 59), "Get Off Of My Cloud", "The Rolling Stones"),
       new Song(toMillis(5, 28), "Let It Bleed", "The Rolling Stones"),

@@ -87,7 +87,7 @@ public class WindowAggregations {
           }
 
           @Override
-          public void add(
+          public CountAggregator add(
               SongEvent songEvent, CountAggregator countAggregator) {
             countAggregator.add(1);
           }
