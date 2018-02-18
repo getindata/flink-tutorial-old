@@ -1,11 +1,10 @@
 package com.getindata.task1;
 
+import com.getindata.tutorial.base.input.SongsSource;
+import com.getindata.tutorial.base.model.SongEvent;
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-
-import com.getindata.tutorial.base.input.SongsSource;
-import com.getindata.tutorial.base.model.SongEvent;
 
 public class FilterSongs {
 	public static void main(String[] args) throws Exception {

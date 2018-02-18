@@ -21,7 +21,7 @@ package com.getindata.tutorial.generation;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer09;
+import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer011;
 import org.apache.flink.streaming.util.serialization.TypeInformationSerializationSchema;
 
 import com.getindata.tutorial.base.input.SongsSource;
@@ -34,7 +34,7 @@ public class GenerationJob {
 		final StreamExecutionEnvironment sEnv = StreamExecutionEnvironment.getExecutionEnvironment();
 
 		final DataStream<SongEvent> events = sEnv.addSource(new SongsSource());
-		events.addSink(new FlinkKafkaProducer09<>(
+		events.addSink(new FlinkKafkaProducer011<>(
 				KafkaProperties.getTopic("lion"),
 				new TypeInformationSerializationSchema<>(TypeInformation.of(SongEvent.class), sEnv.getConfig()),
 				KafkaProperties.getKafkaProperties()));

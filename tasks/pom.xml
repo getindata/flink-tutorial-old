@@ -31,13 +31,13 @@
 
     <dependency>
       <groupId>org.apache.flink</groupId>
-      <artifactId>flink-connector-elasticsearch5_2.10</artifactId>
+      <artifactId>flink-connector-elasticsearch5_${scala.baseVersion}</artifactId>
       <version>${flink.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.apache.flink</groupId>
-      <artifactId>flink-cep_2.10</artifactId>
+      <artifactId>flink-cep_${scala.baseVersion}</artifactId>
       <version>${flink.version}</version>
     </dependency>
   </dependencies>

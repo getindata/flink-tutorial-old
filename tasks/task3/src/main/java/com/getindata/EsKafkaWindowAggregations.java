@@ -46,7 +46,7 @@ import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.streaming.connectors.elasticsearch.ElasticsearchSinkFunction;
 import org.apache.flink.streaming.connectors.elasticsearch.RequestIndexer;
 import org.apache.flink.streaming.connectors.elasticsearch5.ElasticsearchSink;
-import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer09;
+import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer011;
 import org.apache.flink.streaming.util.serialization.TypeInformationSerializationSchema;
 import org.apache.flink.util.Collector;
 import org.elasticsearch.action.index.IndexRequest;
@@ -61,7 +61,7 @@ public class EsKafkaWindowAggregations {
 
     // create a stream of events from source
     final DataStream<SongEvent> events = sEnv.addSource(
-        new FlinkKafkaConsumer09<>(
+        new FlinkKafkaConsumer011<>(
             KafkaProperties.getTopic("lion"),
             new TypeInformationSerializationSchema<>(
                 TypeInformation.of(SongEvent.class),
@@ -111,9 +111,10 @@ public class EsKafkaWindowAggregations {
           }
 
           @Override
-          public void add(
+          public CountAggregator add(
               SongEvent songEvent, CountAggregator countAggregator) {
             countAggregator.add(1);
+            return countAggregator;
           }
 
           @Override
