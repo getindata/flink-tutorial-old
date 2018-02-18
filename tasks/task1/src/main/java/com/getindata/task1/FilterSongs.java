@@ -12,17 +12,16 @@ public class FilterSongs {
 
 		// create a stream of events from source
 		final DataStream<SongEvent> events = sEnv.addSource(new SongsSource());
-
-		// filter events
-		final DataStream<SongEvent> filteredEvents = events.filter(new FilterFunction<SongEvent>() {
-			@Override
-			public boolean filter(SongEvent songEvent) throws Exception {
-				//TODO fill in the code
-			}
-		});
+				// filter events
+//				.filter(new FilterFunction<SongEvent>() {
+//					@Override
+//					public boolean filter(SongEvent songEvent) throws Exception {
+//						//TODO fill in the code
+//					}
+//				});
 
 		// print filtered events
-		filteredEvents.print();
+		events.print();
 
 		// execute streams
 		sEnv.execute();
