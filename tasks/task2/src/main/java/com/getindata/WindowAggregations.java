@@ -21,7 +21,6 @@ package com.getindata;
 import com.getindata.tutorial.base.input.SongsSource;
 import com.getindata.tutorial.base.model.SongEvent;
 import com.getindata.tutorial.base.model.SongEventType;
-import com.getindata.tutorial.base.utils.CountAggregator;
 import com.getindata.tutorial.base.utils.UserStatistics;
 import javax.annotation.Nullable;
 import org.apache.flink.api.common.functions.AggregateFunction;
@@ -53,7 +52,7 @@ public class WindowAggregations {
           @Nullable
           @Override
           public Watermark checkAndGetNextWatermark(SongEvent songEvent, long lastTimestamp) {
-            return songEvent.getUserId() % 2 == 1 ? new Watermark(songEvent.getTimestamp()) : null;
+            return songEvent.getUserId() % 2 == 1 ? new Watermark(songEvent.getTimestamp()) : new Watermark(songEvent.getTimestamp() - 5* 1000*60);
           }
 
           @Override
@@ -80,28 +79,28 @@ public class WindowAggregations {
         .window(EventTimeSessionWindows.withGap(Time.minutes(5)));
 
     final DataStream<UserStatistics> statistics = windowedStream.aggregate(
-        new AggregateFunction<SongEvent, CountAggregator, Long>() {
+        new AggregateFunction<SongEvent, Long, Long>() {
           @Override
-          public CountAggregator createAccumulator() {
-            return new CountAggregator();
+          public Long createAccumulator() {
+            return 0L;
           }
 
           @Override
-          public CountAggregator add(
-              SongEvent songEvent, CountAggregator countAggregator) {
-            countAggregator.add(1);
+          public Long add(
+              SongEvent songEvent, Long count) {
+            return count + 1;
           }
 
           @Override
-          public Long getResult(CountAggregator countAggregator) {
-            return countAggregator.getCount();
+          public Long getResult(Long count) {
+            return count;
+
           }
 
           @Override
-          public CountAggregator merge(
-              CountAggregator countAggregator, CountAggregator acc1) {
-            countAggregator.add(acc1.getCount());
-            return countAggregator;
+          public Long merge(
+              Long count1, Long count2) {
+            return count1 + count2;
           }
         }, new WindowFunction<Long, UserStatistics, Integer, TimeWindow>() {
           @Override
