@@ -88,32 +88,34 @@ public class WindowAggregations {
             );
 
     final DataStream<UserStatistics> statistics = windowedStream.aggregate(
-        new AggregateFunction<SongEvent, CountAggregator, Long>() {
+        new AggregateFunction<SongEvent, Long, Long>() {
           @Override
-          public CountAggregator createAccumulator() {
-            return new CountAggregator();
+          public Long createAccumulator() {
+            return 0L;
           }
 
           @Override
-          public CountAggregator add(
-              SongEvent songEvent, CountAggregator countAggregator) {
+          public Long add(
+              SongEvent songEvent, Long count) {
             //TODO fix this code
-            return countAggregator;
+            return count;
 
             // HINT: to access aggregator's count, use countAggregator.getCount()
             // HINT: to modify the aggregator, use countAggregator.add()
           }
 
           @Override
-          public Long getResult(CountAggregator countAggregator) {
-            //TODO fill in the code
+          public Long getResult(Long count) {
+            //TODO fix this code
+            return 0L;
+
           }
 
           @Override
-          public CountAggregator merge(
-              CountAggregator countAggregator, CountAggregator acc1) {
+          public Long merge(
+              Long count1, Long count2) {
             //TODO fix this code
-            return countAggregator;
+            return 0L;
           }
 
         }, new WindowFunction<Long, UserStatistics, Integer, TimeWindow>() {

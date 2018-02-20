@@ -24,7 +24,6 @@ import com.getindata.tutorial.base.es.EsProperties;
 import com.getindata.tutorial.base.kafka.KafkaProperties;
 import com.getindata.tutorial.base.model.SongEvent;
 import com.getindata.tutorial.base.model.SongEventType;
-import com.getindata.tutorial.base.utils.CountAggregator;
 import com.getindata.tutorial.base.utils.UserStatistics;
 import java.io.IOException;
 import javax.annotation.Nullable;
@@ -73,10 +72,14 @@ public class EsKafkaWindowAggregations {
     // assign timestamps and watermark generation
     final DataStream<SongEvent> eventsInEventTime = events.assignTimestampsAndWatermarks(
         new AssignerWithPunctuatedWatermarks<SongEvent>() {
-          @Nullable
+          
           @Override
           public Watermark checkAndGetNextWatermark(SongEvent songEvent, long lastTimestamp) {
-            return songEvent.getUserId() % 2 == 1 ? new Watermark(songEvent.getTimestamp()) : null;
+            if (songEvent.getUserId() % 2 == 1) {
+              return new Watermark(songEvent.getTimestamp());
+            } else {
+              return new Watermark(songEvent.getTimestamp() - 5*60000);
+            }
           }
 
           @Override
@@ -100,33 +103,31 @@ public class EsKafkaWindowAggregations {
             return songEvent.getUserId();
           }
         })
-        .window(EventTimeSessionWindows.withGap(Time.minutes(5)));
+        .window(EventTimeSessionWindows.withGap(Time.minutes(20)));
 
     final DataStream<UserStatistics> statistics = windowedStream.aggregate(
         // pre-aggregate song plays
-        new AggregateFunction<SongEvent, CountAggregator, Long>() {
+        new AggregateFunction<SongEvent, Long, Long>() {
           @Override
-          public CountAggregator createAccumulator() {
-            return new CountAggregator();
+          public Long createAccumulator() {
+            return 0L;
           }
 
           @Override
-          public CountAggregator add(
-              SongEvent songEvent, CountAggregator countAggregator) {
-            countAggregator.add(1);
-            return countAggregator;
+          public Long add(
+              SongEvent songEvent, Long count) {
+            return count + 1;
           }
 
           @Override
-          public Long getResult(CountAggregator countAggregator) {
-            return countAggregator.getCount();
+          public Long getResult(Long count) {
+            return count;
           }
 
           @Override
-          public CountAggregator merge(
-              CountAggregator countAggregator, CountAggregator acc1) {
-            countAggregator.add(acc1.getCount());
-            return countAggregator;
+          public Long merge(
+              Long count1, Long count2) {
+            return count1 + count2;
           }
         },
         // create user statistics for a session
@@ -161,7 +162,7 @@ public class EsKafkaWindowAggregations {
                 final XContentBuilder result = //TODO fill in the code
 
                 return Requests.indexRequest()
-                    .index(EsProperties.getIndex(//TODO fill in the code))
+                    .index(EsProperties.getIndex(/*TODO fill in the code*/))
                     .type(EsProperties.getType())
                     .source(result);
               }
