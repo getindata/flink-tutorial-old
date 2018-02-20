@@ -99,9 +99,6 @@ public class WindowAggregations {
               SongEvent songEvent, Long count) {
             //TODO fix this code
             return count;
-
-            // HINT: to access aggregator's count, use countAggregator.getCount()
-            // HINT: to modify the aggregator, use countAggregator.add()
           }
 
           @Override
