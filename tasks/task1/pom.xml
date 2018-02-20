@@ -11,8 +11,9 @@
     <relativePath>..</relativePath>
   </parent>
 
+  <groupId>com.getindata</groupId>
   <artifactId>task1</artifactId>
-  <version>${project.version}</version>
+  <version>1.0-SNAPSHOT</version>
 
 
 </project>
