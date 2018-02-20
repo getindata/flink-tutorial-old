@@ -24,7 +24,7 @@ public class KafkaProperties {
 
 	public static Properties getKafkaProperties() {
 		final Properties properties = new Properties();
-		properties.setProperty("bootstrap.servers", "172.17.0.4:9092");
+		properties.setProperty("bootstrap.servers", "10.142.0.3:9092");
 
 		return properties;
 	}

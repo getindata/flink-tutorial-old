@@ -47,7 +47,9 @@ public class EsProperties {
 	public static List<InetSocketAddress> getEsAddresses() throws UnknownHostException {
 		List<InetSocketAddress> transportAddresses = new ArrayList<>();
 
-		transportAddresses.add(new InetSocketAddress("172.17.0.4", 9300));
+		transportAddresses.add(new InetSocketAddress("10.142.0.4", 9300));
+		transportAddresses.add(new InetSocketAddress("10.142.0.3", 9300));
+		transportAddresses.add(new InetSocketAddress("10.142.0.5", 9300));
 
 		return transportAddresses;
 	}
