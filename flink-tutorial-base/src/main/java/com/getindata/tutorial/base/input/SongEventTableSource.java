@@ -18,6 +18,12 @@
 
 package com.getindata.tutorial.base.input;
 
+import com.getindata.tutorial.base.kafka.KafkaProperties;
+import com.getindata.tutorial.base.model.SongEvent;
+import com.getindata.tutorial.base.model.SongEventType;
+import java.util.Collections;
+import java.util.List;
+import javax.annotation.Nullable;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
@@ -25,26 +31,24 @@ import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.AssignerWithPunctuatedWatermarks;
 import org.apache.flink.streaming.api.watermark.Watermark;
-import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer09;
+import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer011;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumerBase;
 import org.apache.flink.streaming.util.serialization.TypeInformationSerializationSchema;
-import org.apache.flink.table.sources.DefinedRowtimeAttribute;
+import org.apache.flink.table.api.TableSchema;
+import org.apache.flink.table.sources.DefinedRowtimeAttributes;
+import org.apache.flink.table.sources.RowtimeAttributeDescriptor;
 import org.apache.flink.table.sources.StreamTableSource;
+import org.apache.flink.table.sources.tsextractors.StreamRecordTimestamp;
+import org.apache.flink.table.sources.wmstrategies.PreserveWatermarks;
 import org.apache.flink.types.Row;
 
-import com.getindata.tutorial.base.kafka.KafkaProperties;
-import com.getindata.tutorial.base.model.SongEvent;
-import com.getindata.tutorial.base.model.SongEventType;
-
-import javax.annotation.Nullable;
-
-public class SongEventTableSource implements StreamTableSource<Row>, DefinedRowtimeAttribute {
+public class SongEventTableSource implements StreamTableSource<Row>, DefinedRowtimeAttributes {
 
 	private static final TypeInformation<SongEvent> typeInfo = TypeInformation.of(SongEvent.class);
 
 	@Override
 	public DataStream<Row> getDataStream(StreamExecutionEnvironment env) {
-		final FlinkKafkaConsumerBase<SongEvent> kafkaSource = new FlinkKafkaConsumer09<>(
+		final FlinkKafkaConsumerBase<SongEvent> kafkaSource = new FlinkKafkaConsumer011<SongEvent>(
 				KafkaProperties.getTopic("lion"),
 				new TypeInformationSerializationSchema<>(
 						typeInfo,
@@ -88,12 +92,19 @@ public class SongEventTableSource implements StreamTableSource<Row>, DefinedRowt
 	}
 
 	@Override
+	public TableSchema getTableSchema() {
+		return TableSchema.fromTypeInfo(getReturnType());
+	}
+
+	@Override
 	public String explainSource() {
 		return "SongEventTable";
 	}
 
 	@Override
-	public String getRowtimeAttribute() {
-		return "t";
+	public List<RowtimeAttributeDescriptor> getRowtimeAttributeDescriptors() {
+		RowtimeAttributeDescriptor descriptor = new RowtimeAttributeDescriptor("t", new StreamRecordTimestamp(),
+				new PreserveWatermarks());
+		return Collections.singletonList(descriptor);
 	}
 }

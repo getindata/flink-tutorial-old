@@ -18,27 +18,59 @@
 
 package com.getindata.tutorial.generation;
 
-import org.apache.flink.api.common.typeinfo.TypeInformation;
-import org.apache.flink.streaming.api.datastream.DataStream;
-import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer09;
-import org.apache.flink.streaming.util.serialization.TypeInformationSerializationSchema;
-
 import com.getindata.tutorial.base.input.SongsSource;
 import com.getindata.tutorial.base.kafka.KafkaProperties;
 import com.getindata.tutorial.base.model.SongEvent;
+import org.apache.flink.api.common.serialization.TypeInformationSerializationSchema;
+import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.streaming.api.datastream.DataStream;
+import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer011;
 
 public class GenerationJob {
 
-	public static void main(String[] args) throws Exception {
-		final StreamExecutionEnvironment sEnv = StreamExecutionEnvironment.getExecutionEnvironment();
 
-		final DataStream<SongEvent> events = sEnv.addSource(new SongsSource());
-		events.addSink(new FlinkKafkaProducer09<>(
-				KafkaProperties.getTopic("lion"),
-				new TypeInformationSerializationSchema<>(TypeInformation.of(SongEvent.class), sEnv.getConfig()),
-				KafkaProperties.getKafkaProperties()));
+  private static final String[] USERS = new String[]{
+      "lion",
+      "aksolotl",
+      "albatross",
+      "antelope",
+      "beaver",
+      "bee",
+      "bull",
+      "butterfly",
+      "camel",
+      "deer",
+      "dinosaur",
+      "dragon",
+      "duck",
+      "fenek",
+      "ferret",
+      "flamingo",
+      "frog",
+      "gazelle",
+      "giraffe",
+      "hippo",
+      "lizard",
+      "snake",
+      "wolf",
+      "zebra",
+      "tiger"
+  };
 
-		sEnv.execute("Kafka producer");
-	}
+  public static void main(String[] args) throws Exception {
+    final StreamExecutionEnvironment sEnv = StreamExecutionEnvironment.getExecutionEnvironment();
+
+    final DataStream<SongEvent> events = sEnv.addSource(new SongsSource());
+
+    for (String user : USERS) {
+      events.addSink(new FlinkKafkaProducer011<>(
+          KafkaProperties.getTopic(user),
+          new TypeInformationSerializationSchema<>(TypeInformation.of(SongEvent.class),
+              sEnv.getConfig()),
+          KafkaProperties.getKafkaProperties()));
+    }
+
+    sEnv.execute("Kafka producer");
+  }
 }
