@@ -53,12 +53,17 @@ public class WindowAggregations {
           @Nullable
           @Override
           public Watermark checkAndGetNextWatermark(SongEvent songEvent, long lastTimestamp) {
-            //TODO fill in the code
+            //TODO: fix this code
+
+            // HINT: to access event timestamp, use songEvent.getTimestamp()
+            // HINT: To access user id, use songEvent.getUserId()
           }
 
           @Override
           public long extractTimestamp(SongEvent songEvent, long lastTimestamp) {
-            //TODO fill in the code
+            //TODO: fix this code
+            return 0;
+
           }
         }
     );
@@ -68,7 +73,8 @@ public class WindowAggregations {
         .filter(new FilterFunction<SongEvent>() {
           @Override
           public boolean filter(final SongEvent songEvent) throws Exception {
-            //TODO fill in the code
+            //TODO fix this code
+            return true;
           }
         })
         .keyBy(new KeySelector<SongEvent, Integer>() {
@@ -77,7 +83,9 @@ public class WindowAggregations {
             //TODO fill in the code
           }
         })
-        .window(//TODO fill in the code);
+        .window(
+            //TODO fill in the code
+            );
 
     final DataStream<UserStatistics> statistics = windowedStream.aggregate(
         new AggregateFunction<SongEvent, CountAggregator, Long>() {
@@ -89,7 +97,11 @@ public class WindowAggregations {
           @Override
           public CountAggregator add(
               SongEvent songEvent, CountAggregator countAggregator) {
-            //TODO fill in the code
+            //TODO fix this code
+            return countAggregator;
+
+            // HINT: to access aggregator's count, use countAggregator.getCount()
+            // HINT: to modify the aggregator, use countAggregator.add()
           }
 
           @Override
@@ -100,9 +112,10 @@ public class WindowAggregations {
           @Override
           public CountAggregator merge(
               CountAggregator countAggregator, CountAggregator acc1) {
-            countAggregator.add(acc1.getCount());
-            //TODO fill in the code
+            //TODO fix this code
+            return countAggregator;
           }
+
         }, new WindowFunction<Long, UserStatistics, Integer, TimeWindow>() {
           @Override
           public void apply(
@@ -111,7 +124,14 @@ public class WindowAggregations {
               Iterable<Long> input,
               Collector<UserStatistics> out) throws Exception {
 
-            //TODO fill in the code
+            for (long count: input) {
+              //TODO fill in the code
+            }
+
+            // HINT: to create UserStatistics, use new UserStatistics(...)
+            // HINT: https://github.com/getindata/flink-tutorial/blob/master/flink-tutorial-base/src/main/java/com/getindata/tutorial/base/utils/UserStatistics.java
+
+
           }
         });
 
