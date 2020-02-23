@@ -18,6 +18,7 @@
 
 package com.getindata.tutorial.solutions.advanced;
 
+import com.getindata.tutorial.base.input.SongEventTableSource;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -25,30 +26,30 @@ import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.java.StreamTableEnvironment;
 import org.apache.flink.types.Row;
 
-import com.getindata.tutorial.base.input.SongEventTableSource;
-
 public class StreamSql {
 
-	public static void main(String[] args) throws Exception {
-		final StreamExecutionEnvironment sEnv = StreamExecutionEnvironment.getExecutionEnvironment();
-		final StreamTableEnvironment tEnv = StreamTableEnvironment.getTableEnvironment(sEnv);
-		sEnv.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
+    public static void main(String[] args) throws Exception {
+        final StreamExecutionEnvironment sEnv = StreamExecutionEnvironment.getExecutionEnvironment();
+        final StreamTableEnvironment tEnv = StreamTableEnvironment.create(sEnv);
+        sEnv.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
-		tEnv.registerTableSource("songs", new SongEventTableSource());
+        // FIXME: replace with https://ci.apache.org/projects/flink/flink-docs-release-1.10/dev/table/connect.html#kafka-connector
+        tEnv.registerTableSource("songs", new SongEventTableSource());
 
-		final Table table = tEnv.sql(
-				"SELECT " +
-				"TUMBLE_START(t, INTERVAL '3' SECOND) as wStart, " +
-				"TUMBLE_END(t, INTERVAL '3' SECOND) as wEnd, " +
-				"COUNT(1) as cnt, " +
-				"song_name as songName, " +
-				"userId " +
-				"FROM songs " +
-				"WHERE type = 'PLAY' " +
-				"GROUP BY song_name, userId, TUMBLE(t, INTERVAL '3' SECOND)");
+        final Table table = tEnv.sqlQuery(
+                "SELECT " +
+                        "TUMBLE_START(t, INTERVAL '3' SECOND) as wStart, " +
+                        "TUMBLE_END(t, INTERVAL '3' SECOND) as wEnd, " +
+                        "COUNT(1) as cnt, " +
+                        "song_name as songName, " +
+                        "userId " +
+                        "FROM songs " +
+                        "WHERE type = 'PLAY' " +
+                        "GROUP BY song_name, userId, TUMBLE(t, INTERVAL '3' SECOND)");
 
-		tEnv.toAppendStream(table, TypeInformation.of(Row.class)).print();
+        tEnv.toAppendStream(table, TypeInformation.of(Row.class)).print();
 
-		sEnv.execute();
-	}
+        sEnv.execute();
+    }
+
 }

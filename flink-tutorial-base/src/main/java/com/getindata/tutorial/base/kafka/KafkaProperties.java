@@ -22,17 +22,31 @@ import java.util.Properties;
 
 public class KafkaProperties {
 
-	public static Properties getKafkaProperties() {
-		final Properties properties = new Properties();
-		properties.setProperty("bootstrap.servers", "10.142.0.3:9092");
+    public static String getUsername() {
+        // FIXME please return your username
+        // return "lion";
+        throw new UnsupportedOperationException("Please provide your user name.");
+    }
 
-		return properties;
-	}
+    public static Properties getKafkaProperties() {
+        final Properties properties = new Properties();
+        // FIXME: uncomment if you are going to use docker
+        // properties.setProperty("bootstrap.servers", "kafka:9092");
+        // return properties;
+        // FIXME: uncomment if you are going to use yarn cluster
+        // properties.setProperty("bootstrap.servers", "34.73.186.13:9092,35.185.27.125:9092,35.237.64.158:9092,35.243.129.90:9092,34.74.44.136:9092");
+        // return properties;
+        throw new UnsupportedOperationException("Please provide Kafka bootstrap servers.");
+    }
 
-	public static String getTopic(String user) {
-		return "songs_" + user;
-	}
+    public static String getTopic(String user) {
+        return "songs_" + user;
+    }
 
-	private KafkaProperties() {
-	}
+    public static String getOutputTopic(String user) {
+        return "statistics_" + user;
+    }
+
+    private KafkaProperties() {
+    }
 }

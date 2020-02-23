@@ -1,49 +1,55 @@
 package com.getindata.tutorial.base.model;
 
 public class Song {
-	private int length;
-	private String name;
-	private String author;
 
-	public Song() {
-	}
+    public static SongBuilder builder() {
+        return new SongBuilder();
+    }
 
-	public Song(int length, String name, String author) {
-		this.length = length;
-		this.name = name;
-		this.author = author;
-	}
+    private int length;
+    private String name;
+    private String author;
 
-	public int getLength() {
-		return length;
-	}
+    public Song() {
+    }
 
-	public String getName() {
-		return name;
-	}
+    public Song(int length, String name, String author) {
+        this.length = length;
+        this.name = name;
+        this.author = author;
+    }
 
-	public String getAuthor() {
-		return author;
-	}
+    public int getLength() {
+        return length;
+    }
 
-	public void setLength(int length) {
-		this.length = length;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public String getAuthor() {
+        return author;
+    }
 
-	public void setAuthor(String author) {
-		this.author = author;
-	}
+    public void setLength(int length) {
+        this.length = length;
+    }
 
-	@Override
-	public String toString() {
-		return "Song{" +
-		       "length=" + length +
-		       ", name='" + name + '\'' +
-		       ", author='" + author + '\'' +
-		       '}';
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    @Override
+    public String toString() {
+        return "Song{" +
+                "length=" + length +
+                ", name='" + name + '\'' +
+                ", author='" + author + '\'' +
+                '}';
+    }
+
 }

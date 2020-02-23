@@ -18,32 +18,32 @@
 
 package com.getindata.tutorial.base.input.utils;
 
-import static org.apache.flink.shaded.guava18.com.google.common.collect.Lists.newArrayList;
-
 import com.getindata.tutorial.base.model.Song;
-import java.util.List;
-import org.apache.flink.shaded.guava18.com.google.common.collect.Lists;
 import org.joda.time.Duration;
+
+import java.util.List;
+
+import static org.apache.flink.shaded.guava18.com.google.common.collect.Lists.newArrayList;
 
 class Songs {
 
-  static final List<Song> SONGS = newArrayList(
-      new Song(toMillis(2, 40), "Yellow Submarine", "The Beatles"),
-      new Song(toMillis(2, 59), "Get Off Of My Cloud", "The Rolling Stones"),
-      new Song(toMillis(5, 28), "Let It Bleed", "The Rolling Stones"),
-      new Song(toMillis(3, 51), "Dancing Queen", "Abba"),
-      new Song(toMillis(3, 53), "Rolling in the Deep", "Adele"),
-      new Song(toMillis(3, 11), "Killer Queen", "Queen"),
-      new Song(toMillis(3, 54), "California Gurls", "Katy Perry"),
-      new Song(toMillis(4, 57), "Silent All These Years", "Tori Amos"),
-      new Song(toMillis(6, 6), "Bohemian Rhapsody", "Queen"),
-      new Song(toMillis(4, 32), "I want to break free", "Queen")
-  );
+    static final List<Song> SONGS = newArrayList(
+            new Song(toMillis(2, 40), "Yellow Submarine", "The Beatles"),
+            new Song(toMillis(2, 59), "Get Off Of My Cloud", "The Rolling Stones"),
+            new Song(toMillis(5, 28), "Let It Bleed", "The Rolling Stones"),
+            new Song(toMillis(3, 51), "Dancing Queen", "Abba"),
+            new Song(toMillis(3, 53), "Rolling in the Deep", "Adele"),
+            new Song(toMillis(3, 11), "Killer Queen", "Queen"),
+            new Song(toMillis(3, 54), "California Gurls", "Katy Perry"),
+            new Song(toMillis(4, 57), "Silent All These Years", "Tori Amos"),
+            new Song(toMillis(6, 6), "Bohemian Rhapsody", "Queen"),
+            new Song(toMillis(4, 32), "I want to break free", "Queen")
+    );
 
-  private static int toMillis(int minutes, int seconds) {
-    return (int) Duration.standardMinutes(minutes).plus(Duration.standardSeconds(seconds)).getMillis();
-  }
+    private static int toMillis(int minutes, int seconds) {
+        return (int) Duration.standardMinutes(minutes).plus(Duration.standardSeconds(seconds)).getMillis();
+    }
 
-  private Songs() {
-  }
+    private Songs() {
+    }
 }

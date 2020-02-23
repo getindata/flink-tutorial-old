@@ -1,45 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <groupId>com.getindata</groupId>
-    <artifactId>flink-tutorial</artifactId>
+    <parent>
+        <groupId>com.getindata</groupId>
+        <artifactId>flink-tutorial</artifactId>
+        <version>1.0-SNAPSHOT</version>
+        <relativePath>..</relativePath>
+    </parent>
+
+    <artifactId>tasks</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <relativePath>..</relativePath>
-  </parent>
+    <packaging>pom</packaging>
 
-  <artifactId>tasks</artifactId>
-  <version>1.0-SNAPSHOT</version>
-  <packaging>pom</packaging>
+    <modules>
+        <module>task1</module>
+        <module>task2</module>
+        <module>task3</module>
+        <module>task4</module>
+    </modules>
 
-  <modules>
-    <module>task1</module>
-    <module>task2</module>
-    <module>task3</module>
-    <module>task4</module>
-  </modules>
+    <dependencies>
+        <dependency>
+            <groupId>com.getindata</groupId>
+            <artifactId>flink-tutorial-base</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
-  <dependencies>
-    <dependency>
-      <groupId>com.getindata</groupId>
-      <artifactId>flink-tutorial-base</artifactId>
-      <version>${project.version}</version>
-    </dependency>
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-connector-elasticsearch5_${scala.baseVersion}</artifactId>
+            <version>${flink.version}</version>
+        </dependency>
 
-    <dependency>
-      <groupId>org.apache.flink</groupId>
-      <artifactId>flink-connector-elasticsearch5_${scala.baseVersion}</artifactId>
-      <version>${flink.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.flink</groupId>
-      <artifactId>flink-cep_${scala.baseVersion}</artifactId>
-      <version>${flink.version}</version>
-    </dependency>
-  </dependencies>
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-cep_${scala.baseVersion}</artifactId>
+            <version>${flink.version}</version>
+        </dependency>
+    </dependencies>
 
 </project>

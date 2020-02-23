@@ -1,63 +1,73 @@
 package com.getindata.tutorial.base.model;
 
+import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import java.time.Instant;
 
+@JsonSerialize
 public class SongEvent {
-	private Song song;
-	private long timestamp;
-	private SongEventType type;
-	private int userId;
 
-	public SongEvent() {
-	}
+    public static SongEventBuilder builder() {
+        return new SongEventBuilder();
+    }
 
-	public SongEvent(Song song, long timestamp, SongEventType type, int userId) {
-		this.song = song;
-		this.timestamp = timestamp;
-		this.type = type;
-		this.userId = userId;
-	}
+    private Song song;
+    private long timestamp;
+    private SongEventType type;
+    private int userId;
 
-	public Song getSong() {
-		return song;
-	}
+    public SongEvent() {
+    }
 
-	public long getTimestamp() {
-		return timestamp;
-	}
+    public SongEvent(Song song, long timestamp, SongEventType type, int userId) {
+        this.song = song;
+        this.timestamp = timestamp;
+        this.type = type;
+        this.userId = userId;
+    }
 
-	public SongEventType getType() {
-		return type;
-	}
+    public Song getSong() {
+        return song;
+    }
 
-	public int getUserId() {
-		return userId;
-	}
+    public long getTimestamp() {
+        return timestamp;
+    }
 
-	public void setSong(Song song) {
-		this.song = song;
-	}
+    public SongEventType getType() {
+        return type;
+    }
 
-	public void setTimestamp(long timestamp) {
-		this.timestamp = timestamp;
-	}
+    public int getUserId() {
+        return userId;
+    }
 
-	public void setType(SongEventType type) {
-		this.type = type;
-	}
+    public void setSong(Song song) {
+        this.song = song;
+    }
 
-	public void setUserId(int userId) {
-		this.userId = userId;
-	}
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
+    }
 
-	@Override
-	public String toString() {
-		return "SongEvent{" +
-		       "song=" + song +
-		       ", timestamp=" + Instant.ofEpochMilli(timestamp) +
-		       ", type=" + type +
-		       ", userId=" + userId +
-		       '}';
-	}
+    public void setType(SongEventType type) {
+        this.type = type;
+    }
+
+    public void setUserId(int userId) {
+        this.userId = userId;
+    }
+
+    @Override
+    public String toString() {
+        return "SongEvent{" +
+                "song=" + song +
+                ", timestamp=" + Instant.ofEpochMilli(timestamp) +
+                ", type=" + type +
+                ", userId=" + userId +
+                '}';
+    }
+
+
+
 }

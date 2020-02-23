@@ -18,8 +18,9 @@
 
 package com.getindata;
 
+import com.getindata.tutorial.base.kafka.KafkaProperties;
+import com.getindata.tutorial.base.model.SongCount;
 import com.getindata.tutorial.base.model.SongEvent;
-import com.getindata.tutorial.base.utils.UserStatistics;
 import com.getindata.tutorial.base.utils.shortcuts.Shortcuts;
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.state.ValueState;
@@ -28,67 +29,92 @@ import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStream;
+import org.apache.flink.streaming.api.datastream.KeyedStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.api.functions.ProcessFunction;
+import org.apache.flink.streaming.api.functions.KeyedProcessFunction;
 import org.apache.flink.util.Collector;
-import org.joda.time.Duration;
-import org.joda.time.Instant;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class AdvancedTimeHandling {
 
-  public static void main(String[] args) throws Exception {
-    final StreamExecutionEnvironment sEnv = StreamExecutionEnvironment.getExecutionEnvironment();
-    sEnv.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
+    public static void main(String[] args) throws Exception {
+        final String userName = KafkaProperties.getUsername();
+        final StreamExecutionEnvironment sEnv = StreamExecutionEnvironment.getExecutionEnvironment();
+        sEnv.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
-    // You can use prepared code for reading events from kafka
-    final DataStream<SongEvent> songsInEventTime = Shortcuts.getSongsWithTimestamps(sEnv, "lion")
-        .keyBy(new KeySelector<SongEvent, Integer>() {
-          @Override
-          public Integer getKey(SongEvent songEvent) throws Exception {
-            return songEvent.getUserId();
-          }
-        });
+        KeyedStream<SongEvent, Integer> keyedSongs = Shortcuts.getSongsWithTimestamps(sEnv, userName)
+                .filter(new TheRollingStonesFilterFunction())
+                .keyBy(new UserKeySelector());
 
-    songsInEventTime.process(new ProcessFunction<SongEvent, UserStatistics>() {
+        DataStream<SongCount> counts = keyedSongs.process(new SongCountingProcessFunction());
 
-      /** The state that is maintained by this process function */
-      private ValueState<UserStatistics> state;
+        counts.print();
 
-      @Override
-      public void open(Configuration parameters) throws Exception {
-        state = getRuntimeContext().getState(new ValueStateDescriptor<>(
-            "userStatistics",
-            UserStatistics.class));
-      }
+        sEnv.execute();
+    }
 
-      @Override
-      public void processElement(
-          SongEvent songEvent,
-          Context context,
-          Collector<UserStatistics> collector) throws Exception {
+    static class TheRollingStonesFilterFunction implements FilterFunction<SongEvent> {
+        @Override
+        public boolean filter(SongEvent songEvent) {
+            // TODO put your code here
+            return true;
+        }
+    }
 
-        UserStatistics current = state.value();
-        if (current == null) {
-          //TODO fill in the code
-        } else {
-          //TODO fill in the code
+    static class UserKeySelector implements KeySelector<SongEvent, Integer> {
+        @Override
+        public Integer getKey(SongEvent songEvent) {
+            // TODO put your code here
+            return null;
+        }
+    }
+
+    static class SongCountingProcessFunction extends KeyedProcessFunction<Integer, SongEvent, SongCount> {
+
+        private static final Logger LOG = LoggerFactory.getLogger(SongCountingProcessFunction.class);
+
+        private static final long FIFTEEN_MINUTES = 15 * 60 * 1000L;
+
+        /**
+         * The state that is maintained by this process function
+         */
+        private ValueState<Integer> counterState;
+        private ValueState<Long> lastTimestampState;
+
+        @Override
+        public void open(Configuration parameters) {
+            counterState = getRuntimeContext().getState(new ValueStateDescriptor<>(
+                    "counter",
+                    Integer.class
+            ));
+            lastTimestampState = getRuntimeContext().getState(new ValueStateDescriptor<>(
+                    "lastTimestamp",
+                    Long.class
+            ));
         }
 
-      }
+        @Override
+        public void processElement(SongEvent songEvent, Context context, Collector<SongCount> collector) throws Exception {
+            Integer currentCounter = counterState.value();
+            Long lastTimestamp = lastTimestampState.value();
 
-      @Override
-      public void onTimer(long timestamp, OnTimerContext ctx, Collector<UserStatistics> out)
-          throws Exception {
-        UserStatistics current = state.value();
-        if (current == null) {
-          throw new IllegalStateException("This should not happen!");
-        } else {
-          //TODO fill in the code
+            if (currentCounter == null) {
+                // Initialize state.
+                // TODO put your code here
+            } else {
+                // Update state.
+                // TODO put your code here
+            }
         }
-      }
-    }).print();
 
-    sEnv.execute();
-  }
+        @Override
+        public void onTimer(long timestamp, OnTimerContext ctx, Collector<SongCount> out) throws Exception {
+            Integer currentCounter = counterState.value();
+            Long lastTimestamp = lastTimestampState.value();
+
+            // TODO put your code here
+        }
+    }
 }
