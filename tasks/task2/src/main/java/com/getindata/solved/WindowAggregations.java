@@ -81,7 +81,6 @@ public class WindowAggregations {
             return songEvent.getUserId() % 2 == 1
                     ? new Watermark(songEvent.getTimestamp())
                     : new Watermark(songEvent.getTimestamp() - FIVE_MINUTES);
-
         }
 
         @Override
