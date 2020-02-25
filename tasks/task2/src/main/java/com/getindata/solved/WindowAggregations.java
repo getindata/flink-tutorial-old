@@ -78,9 +78,7 @@ public class WindowAggregations {
         @Nullable
         @Override
         public Watermark checkAndGetNextWatermark(SongEvent songEvent, long lastTimestamp) {
-            return songEvent.getUserId() % 2 == 1
-                    ? new Watermark(songEvent.getTimestamp())
-                    : new Watermark(songEvent.getTimestamp() - FIVE_MINUTES);
+            return new Watermark(songEvent.getTimestamp());
         }
 
         @Override

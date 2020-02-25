@@ -6,7 +6,6 @@ import com.getindata.tutorial.base.model.UserStatistics;
 import org.apache.flink.runtime.testutils.MiniClusterResourceConfiguration;
 import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStream;
-import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 import org.apache.flink.test.util.MiniClusterWithClientResource;
@@ -22,7 +21,6 @@ import static com.getindata.tutorial.base.model.TestDataBuilders.aSong;
 import static com.getindata.tutorial.base.model.TestDataBuilders.aSongEvent;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class WindowAggregationsTest {
 
@@ -42,72 +40,6 @@ class WindowAggregationsTest {
     }
 
     @Test
-    void shouldAggregateUserStatistics() throws Exception {
-        // given
-        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-        env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
-
-        List<SongEvent> input = newArrayList(
-                aSongEvent()
-                        .setUserId(1)
-                        .setSong(aSong().name("Song 1").build())
-                        .setTimestamp(Instant.parse("2012-02-10T12:00:00.0Z").toEpochMilli())
-                        .setType(SongEventType.PLAY)
-                        .build(),
-                aSongEvent()
-                        .setUserId(1)
-                        .setSong(aSong().name("Song 2").build())
-                        .setTimestamp(Instant.parse("2012-02-10T12:03:00.0Z").toEpochMilli())
-                        .setType(SongEventType.PLAY)
-                        .build(),
-                // gap between these two events is longer than allowed gap
-                aSongEvent()
-                        .setUserId(1)
-                        .setSong(aSong().name("Song 3").build())
-                        .setTimestamp(Instant.parse("2012-02-10T13:00:00.0Z").toEpochMilli())
-                        .setType(SongEventType.PLAY)
-                        .build(),
-                aSongEvent()
-                        .setUserId(1)
-                        .setSong(aSong().name("Song 4").build())
-                        .setTimestamp(Instant.parse("2012-02-10T13:02:00.0Z").toEpochMilli())
-                        .setType(SongEventType.PLAY)
-                        .build()
-
-        );
-
-        DataStreamSource<SongEvent> inputEvents = env.fromCollection(input);
-        DataStream<UserStatistics> statistics = WindowAggregations.pipeline(inputEvents);
-        statistics.addSink(new CollectSink());
-
-        // when
-        env.execute();
-
-        // then
-        assertEquals(CollectSink.values.size(), 2);
-        assertTrue(CollectSink.values.contains(
-                UserStatistics.builder()
-                        .userId(1)
-                        .count(2)
-                        // Session start == the time of the first event from the session.
-                        .start(Instant.parse("2012-02-10T12:00:00.0Z").toEpochMilli())
-                        // Session end == the time of the last event within the session + session gap.
-                        .end(Instant.parse("2012-02-10T12:23:00.0Z").toEpochMilli())
-                        .build()
-        ));
-        assertTrue(CollectSink.values.contains(
-                UserStatistics.builder()
-                        .userId(1)
-                        .count(2)
-                        // Session start == the time of the first event from the session.
-                        .start(Instant.parse("2012-02-10T13:00:00.0Z").toEpochMilli())
-                        // Session end == the time of the last event within the session + session gap.
-                        .end(Instant.parse("2012-02-10T13:22:00.0Z").toEpochMilli())
-                        .build()
-        ));
-    }
-
-    @Test
     void shouldAggregateUserStatisticsForMultipleUsers() throws Exception {
         // given
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment().setParallelism(1);
@@ -117,30 +49,18 @@ class WindowAggregationsTest {
                 aSongEvent()
                         .setUserId(2)
                         .setSong(aSong().name("Song 1").build())
-                        .setTimestamp(Instant.parse("2012-02-10T12:05:00.0Z").toEpochMilli())
+                        .setTimestamp(Instant.parse("2012-02-10T12:06:00.0Z").toEpochMilli())
                         .setType(SongEventType.PLAY)
                         .build(),
                 aSongEvent()   // odd users are 5-minute delayed
                         .setUserId(1)
                         .setSong(aSong().name("Song 2").build())
-                        .setTimestamp(Instant.parse("2012-02-10T12:04:00.0Z").toEpochMilli())
-                        .setType(SongEventType.PLAY)
-                        .build(),
-                aSongEvent()
-                        .setUserId(2)
-                        .setSong(aSong().name("Song 3").build())
-                        .setTimestamp(Instant.parse("2012-02-10T12:25:00.0Z").toEpochMilli())
-                        .setType(SongEventType.PLAY)
-                        .build(),
-                aSongEvent()  // odd users are 5-minute delayed
-                        .setUserId(1)
-                        .setSong(aSong().name("Song 4").build())
-                        .setTimestamp(Instant.parse("2012-02-10T12:21:00.0Z").toEpochMilli())
+                        .setTimestamp(Instant.parse("2012-02-10T12:00:00.0Z").toEpochMilli())
                         .setType(SongEventType.PLAY)
                         .build()
         );
 
-        DataStream<SongEvent> inputEvents = env.fromCollection(input).setParallelism(1);
+        DataStream<SongEvent> inputEvents = env.fromCollection(input);
         DataStream<UserStatistics> statistics = WindowAggregations.pipeline(inputEvents);
         statistics.addSink(new CollectSink());
 
@@ -148,27 +68,8 @@ class WindowAggregationsTest {
         env.execute();
 
         // then
-        assertEquals(CollectSink.values.size(), 2);
-        assertTrue(CollectSink.values.contains(
-                UserStatistics.builder()
-                        .userId(2)
-                        .count(2)
-                        // Session start == the time of the first event from the session.
-                        .start(Instant.parse("2012-02-10T12:05:00.0Z").toEpochMilli())
-                        // Session end == the time of the last event within the session + session gap.
-                        .end(Instant.parse("2012-02-10T12:45:00.0Z").toEpochMilli())
-                        .build()
-        ));
-        assertTrue(CollectSink.values.contains(
-                UserStatistics.builder()
-                        .userId(1)
-                        .count(2)
-                        // Session start == the time of the first event from the session.
-                        .start(Instant.parse("2012-02-10T12:04:00.0Z").toEpochMilli())
-                        // Session end == the time of the last event within the session + session gap.
-                        .end(Instant.parse("2012-02-10T12:41:00.0Z").toEpochMilli())
-                        .build()
-        ));
+        assertEquals(CollectSink.values.size(), 1);
+
     }
 
     /**
