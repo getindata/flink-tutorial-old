@@ -18,10 +18,9 @@
 
 package com.getindata.solved;
 
-import com.getindata.tutorial.base.kafka.KafkaProperties;
+import com.getindata.tutorial.base.input.SongsSource;
 import com.getindata.tutorial.base.model.SongCount;
 import com.getindata.tutorial.base.model.SongEvent;
-import com.getindata.tutorial.base.utils.shortcuts.Shortcuts;
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
@@ -31,11 +30,14 @@ import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.KeyedStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.api.functions.AssignerWithPunctuatedWatermarks;
 import org.apache.flink.streaming.api.functions.KeyedProcessFunction;
+import org.apache.flink.streaming.api.watermark.Watermark;
 import org.apache.flink.util.Collector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.time.Duration;
 import java.time.Instant;
 
@@ -43,19 +45,39 @@ import java.time.Instant;
 public class AdvancedTimeHandling {
 
     public static void main(String[] args) throws Exception {
-        final String userName = KafkaProperties.getUsername();
         final StreamExecutionEnvironment sEnv = StreamExecutionEnvironment.getExecutionEnvironment();
         sEnv.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
-        KeyedStream<SongEvent, Integer> keyedSongs = Shortcuts.getSongsWithTimestamps(sEnv, userName)
-                .filter(new TheRollingStonesFilterFunction())
-                .keyBy(new UserKeySelector());
+        KeyedStream<SongEvent, Integer> keyedSongs =
+                sEnv.addSource(new SongsSource())
+                        .assignTimestampsAndWatermarks(new SongWatermarkAssigner())
+                        .filter(new TheRollingStonesFilterFunction())
+                        .keyBy(new UserKeySelector());
 
         DataStream<SongCount> counts = keyedSongs.process(new SongCountingProcessFunction());
 
         counts.print();
 
         sEnv.execute();
+    }
+
+    static class SongWatermarkAssigner implements AssignerWithPunctuatedWatermarks<SongEvent> {
+
+        private static final long FIVE_MINUTES = 5 * 1000 * 60L;
+
+        @Nullable
+        @Override
+        public Watermark checkAndGetNextWatermark(SongEvent songEvent, long lastTimestamp) {
+            return songEvent.getUserId() % 2 == 1
+                    ? new Watermark(songEvent.getTimestamp())
+                    : new Watermark(songEvent.getTimestamp() - FIVE_MINUTES);
+
+        }
+
+        @Override
+        public long extractTimestamp(SongEvent songEvent, long lastTimestamp) {
+            return songEvent.getTimestamp();
+        }
     }
 
     static class TheRollingStonesFilterFunction implements FilterFunction<SongEvent> {
@@ -77,6 +99,7 @@ public class AdvancedTimeHandling {
         private static final Logger LOG = LoggerFactory.getLogger(SongCountingProcessFunction.class);
 
         private static final long FIFTEEN_MINUTES = 15 * 60 * 1000L;
+        private static final long THRESHOLD = 3;
 
         /**
          * The state that is maintained by this process function
@@ -101,13 +124,17 @@ public class AdvancedTimeHandling {
             Integer currentCounter = counterState.value();
             Long lastTimestamp = lastTimestampState.value();
             if (currentCounter == null) {
-                LOG.info("A user {} listens to The Rolling Stones song for the first time.", context.getCurrentKey());
+                LOG.debug("A user {} listens to The Rolling Stones song for the first time.", context.getCurrentKey());
                 // Initialize state.
                 counterState.update(1);
                 lastTimestampState.update(songEvent.getTimestamp());
             } else {
-                LOG.info("A user {} listens to a next ({}) The Rolling Stones song.", context.getCurrentKey(), currentCounter + 1);
-                counterState.update(currentCounter + 1);
+                currentCounter++;
+                LOG.debug("A user {} listens to a next ({}) The Rolling Stones song.", context.getCurrentKey(), currentCounter);
+                if (currentCounter >= THRESHOLD) {
+                    collector.collect(new SongCount(context.getCurrentKey(), currentCounter));
+                }
+                counterState.update(currentCounter);
                 lastTimestamp = Math.max(lastTimestamp, songEvent.getTimestamp());
                 lastTimestampState.update(lastTimestamp);
                 context.timerService().registerEventTimeTimer(lastTimestamp + FIFTEEN_MINUTES);
@@ -116,16 +143,11 @@ public class AdvancedTimeHandling {
 
         @Override
         public void onTimer(long timestamp, OnTimerContext ctx, Collector<SongCount> out) throws Exception {
-            Integer currentCounter = counterState.value();
             Long lastTimestamp = lastTimestampState.value();
 
             // if now() >= lastTimestamp + 15 minutes
             if (!Instant.ofEpochMilli(ctx.timestamp()).isBefore(Instant.ofEpochMilli(lastTimestamp).plus(Duration.ofMinutes(15)))) {
-                LOG.info("Fifteen minutes has passed; userId={}.", ctx.getCurrentKey());
-                if (currentCounter >= 3) {
-                    LOG.info("Emitting counter={} for userId={}.", currentCounter, ctx.getCurrentKey());
-                    out.collect(new SongCount(ctx.getCurrentKey(), currentCounter));
-                }
+                LOG.debug("Fifteen minutes has passed for userId={}. Clearing state.", ctx.getCurrentKey());
                 counterState.clear();
                 lastTimestampState.clear();
             }

@@ -18,10 +18,10 @@
 
 package com.getindata;
 
+import com.getindata.tutorial.base.input.SongsSource;
 import com.getindata.tutorial.base.kafka.KafkaProperties;
 import com.getindata.tutorial.base.model.SongCount;
 import com.getindata.tutorial.base.model.SongEvent;
-import com.getindata.tutorial.base.utils.shortcuts.Shortcuts;
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
@@ -31,10 +31,14 @@ import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.KeyedStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.api.functions.AssignerWithPunctuatedWatermarks;
 import org.apache.flink.streaming.api.functions.KeyedProcessFunction;
+import org.apache.flink.streaming.api.watermark.Watermark;
 import org.apache.flink.util.Collector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
 
 
 public class AdvancedTimeHandling {
@@ -44,7 +48,9 @@ public class AdvancedTimeHandling {
         final StreamExecutionEnvironment sEnv = StreamExecutionEnvironment.getExecutionEnvironment();
         sEnv.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
-        KeyedStream<SongEvent, Integer> keyedSongs = Shortcuts.getSongsWithTimestamps(sEnv, userName)
+        KeyedStream<SongEvent, Integer> keyedSongs = sEnv
+                .addSource(new SongsSource())
+                .assignTimestampsAndWatermarks(new SongWatermarkAssigner())
                 .filter(new TheRollingStonesFilterFunction())
                 .keyBy(new UserKeySelector());
 
@@ -53,6 +59,25 @@ public class AdvancedTimeHandling {
         counts.print();
 
         sEnv.execute();
+    }
+
+    static class SongWatermarkAssigner implements AssignerWithPunctuatedWatermarks<SongEvent> {
+
+        private static final long FIVE_MINUTES = 5 * 1000 * 60L;
+
+        @Nullable
+        @Override
+        public Watermark checkAndGetNextWatermark(SongEvent songEvent, long lastTimestamp) {
+            return songEvent.getUserId() % 2 == 1
+                    ? new Watermark(songEvent.getTimestamp())
+                    : new Watermark(songEvent.getTimestamp() - FIVE_MINUTES);
+
+        }
+
+        @Override
+        public long extractTimestamp(SongEvent songEvent, long lastTimestamp) {
+            return songEvent.getTimestamp();
+        }
     }
 
     static class TheRollingStonesFilterFunction implements FilterFunction<SongEvent> {
@@ -76,6 +101,7 @@ public class AdvancedTimeHandling {
         private static final Logger LOG = LoggerFactory.getLogger(SongCountingProcessFunction.class);
 
         private static final long FIFTEEN_MINUTES = 15 * 60 * 1000L;
+        private static final long THRESHOLD = 3;
 
         /**
          * The state that is maintained by this process function
