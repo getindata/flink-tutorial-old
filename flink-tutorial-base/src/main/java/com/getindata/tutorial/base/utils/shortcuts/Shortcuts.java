@@ -18,51 +18,51 @@
 
 package com.getindata.tutorial.base.utils.shortcuts;
 
+import com.getindata.tutorial.base.kafka.KafkaProperties;
+import com.getindata.tutorial.base.model.SongEvent;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.AssignerWithPunctuatedWatermarks;
 import org.apache.flink.streaming.api.watermark.Watermark;
-import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer011;
-import org.apache.flink.streaming.util.serialization.TypeInformationSerializationSchema;
-
-import com.getindata.tutorial.base.kafka.KafkaProperties;
-import com.getindata.tutorial.base.model.SongEvent;
-import com.getindata.tutorial.base.model.SongEventType;
+import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
+import org.apache.flink.api.common.serialization.TypeInformationSerializationSchema;
 
 import javax.annotation.Nullable;
 
 public class Shortcuts {
 
-	public static DataStream<SongEvent> getSongsWithTimestamps(StreamExecutionEnvironment sEnv, String user) {
+    public static DataStream<SongEvent> getSongsWithTimestamps(StreamExecutionEnvironment sEnv, String user) {
 
-		// create a stream of events from source
-		final DataStream<SongEvent> events = sEnv.addSource(
-				new FlinkKafkaConsumer011<>(
-						KafkaProperties.getTopic(user),
-						new TypeInformationSerializationSchema<>(
-								TypeInformation.of(SongEvent.class),
-								sEnv.getConfig()),
-						KafkaProperties.getKafkaProperties()
-				)
-		);
+        // create a stream of events from source
+        final DataStream<SongEvent> events = sEnv.addSource(
+                new FlinkKafkaConsumer<>(
+                        KafkaProperties.getTopic(user),
+                        new TypeInformationSerializationSchema<>(
+                                TypeInformation.of(SongEvent.class),
+                                sEnv.getConfig()
+                        ),
+                        KafkaProperties.getKafkaProperties()
+                )
+        );
 
-		return events.assignTimestampsAndWatermarks(
-				new AssignerWithPunctuatedWatermarks<SongEvent>() {
-					@Nullable
-					@Override
-					public Watermark checkAndGetNextWatermark(SongEvent songEvent, long lastTimestamp) {
-						return songEvent.getUserId() % 2 == 1 ? new Watermark(songEvent.getTimestamp()) : null;
-					}
+        return events.assignTimestampsAndWatermarks(
+                new AssignerWithPunctuatedWatermarks<SongEvent>() {
+                    @Nullable
+                    @Override
+                    public Watermark checkAndGetNextWatermark(SongEvent songEvent, long lastTimestamp) {
+                        return songEvent.getUserId() % 2 == 1 ? new Watermark(songEvent.getTimestamp()) : null;
+                    }
 
-					@Override
-					public long extractTimestamp(SongEvent songEvent, long lastTimestamp) {
-						return songEvent.getTimestamp();
-					}
-				}
-		);
-	}
+                    @Override
+                    public long extractTimestamp(SongEvent songEvent, long lastTimestamp) {
+                        return songEvent.getTimestamp();
+                    }
+                }
+        );
+    }
 
-	private Shortcuts() {
-	}
+    private Shortcuts() {
+    }
+
 }

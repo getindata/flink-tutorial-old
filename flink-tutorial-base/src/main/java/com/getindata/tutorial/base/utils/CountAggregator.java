@@ -1,17 +1,19 @@
 package com.getindata.tutorial.base.utils;
 
 public class CountAggregator {
-		private long count = 0;
 
-		public void add(long count) {
-			this.count += count;
-		}
+    private long count = 0;
 
-		public long getCount() {
-			return count;
-		}
+    public void add(long count) {
+        this.count += count;
+    }
 
-		public CountAggregator() {
-		}
-	}
+    public long getCount() {
+        return count;
+    }
+
+    public CountAggregator() {
+    }
+
+}
 
