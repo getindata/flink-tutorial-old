@@ -34,9 +34,9 @@ public class KafkaProperties {
         // properties.setProperty("bootstrap.servers", "kafka:9092");
         // return properties;
         // FIXME: uncomment if you are going to use yarn cluster
-        // properties.setProperty("bootstrap.servers", "34.73.186.13:9092,35.185.27.125:9092,35.237.64.158:9092,35.243.129.90:9092,34.74.44.136:9092");
-        // return properties;
-        throw new UnsupportedOperationException("Please provide Kafka bootstrap servers.");
+//         properties.setProperty("bootstrap.servers", "flink-slave-01.c.getindata-training.internal:9092,flink-slave-02.c.getindata-training.internal:9092,flink-slave-03.c.getindata-training.internal:9092,flink-slave-04.c.getindata-training.internal:9092,flink-slave-05.c.getindata-training.internal:9092");
+//         return properties;
+//        throw new UnsupportedOperationException("Please provide Kafka bootstrap servers.");
     }
 
     public static String getTopic(String user) {

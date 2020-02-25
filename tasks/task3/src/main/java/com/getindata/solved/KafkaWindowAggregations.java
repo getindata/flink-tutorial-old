@@ -16,8 +16,10 @@
  * limitations under the License.
  */
 
-package com.getindata;
+package com.getindata.solved;
 
+import com.getindata.JsonDeserializationSchema;
+import com.getindata.JsonSerializationSchema;
 import com.getindata.tutorial.base.kafka.KafkaProperties;
 import com.getindata.tutorial.base.model.SongEvent;
 import com.getindata.tutorial.base.model.SongEventType;
@@ -35,6 +37,8 @@ import org.apache.flink.streaming.api.watermark.Watermark;
 import org.apache.flink.streaming.api.windowing.assigners.EventTimeSessionWindows;
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
+import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
+import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer;
 import org.apache.flink.util.Collector;
 
 import javax.annotation.Nullable;
@@ -49,15 +53,22 @@ public class KafkaWindowAggregations {
 
         // create a stream of events from source
         final DataStream<SongEvent> events = sEnv.addSource(
-                /* TODO put your code here */
-                null
+                new FlinkKafkaConsumer<>(
+                        KafkaProperties.getTopic(userName),
+                        new JsonDeserializationSchema<>(SongEvent.class),
+                        KafkaProperties.getKafkaProperties()
+                )
         );
 
         final DataStream<UserStatistics> statistics = pipeline(events);
 
         statistics.addSink(
-                /* TODO put your code here */
-                null
+                new FlinkKafkaProducer<>(
+                        KafkaProperties.getOutputTopic(userName),
+                        new JsonSerializationSchema<>(KafkaProperties.getOutputTopic(userName)),
+                        KafkaProperties.getKafkaProperties(),
+                        FlinkKafkaProducer.Semantic.EXACTLY_ONCE
+                )
         );
 
         // execute streams

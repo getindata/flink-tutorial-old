@@ -5,12 +5,12 @@ import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.ObjectMap
 import org.apache.flink.streaming.connectors.kafka.KafkaDeserializationSchema;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
-class JsonDeserializationSchema<T> implements KafkaDeserializationSchema<T> {
+public class JsonDeserializationSchema<T> implements KafkaDeserializationSchema<T> {
 
     private final Class<T> outputClass;
     private final ObjectMapper objectMapper;
 
-    JsonDeserializationSchema(Class<T> outputClass) {
+    public JsonDeserializationSchema(Class<T> outputClass) {
         this.outputClass = outputClass;
         this.objectMapper = new ObjectMapper();
     }

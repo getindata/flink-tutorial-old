@@ -7,12 +7,12 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 
 import javax.annotation.Nullable;
 
-class JsonSerializationSchema<T> implements KafkaSerializationSchema<T> {
+public class JsonSerializationSchema<T> implements KafkaSerializationSchema<T> {
 
     private final ObjectMapper objectMapper;
     private final String topic;
 
-    JsonSerializationSchema(String topic) {
+    public JsonSerializationSchema(String topic) {
         this.topic = topic;
         this.objectMapper = new ObjectMapper();
     }
