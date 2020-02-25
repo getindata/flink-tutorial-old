@@ -39,7 +39,6 @@ under the License.
 
     <modules>
         <module>flink-tutorial-base</module>
-        <module>flink-tutorial-solutions</module>
         <module>tasks</module>
     </modules>
 
