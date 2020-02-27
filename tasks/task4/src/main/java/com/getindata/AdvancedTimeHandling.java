@@ -19,7 +19,6 @@
 package com.getindata;
 
 import com.getindata.tutorial.base.input.SongsSource;
-import com.getindata.tutorial.base.kafka.KafkaProperties;
 import com.getindata.tutorial.base.model.SongCount;
 import com.getindata.tutorial.base.model.SongEvent;
 import org.apache.flink.api.common.functions.FilterFunction;
@@ -44,7 +43,6 @@ import javax.annotation.Nullable;
 public class AdvancedTimeHandling {
 
     public static void main(String[] args) throws Exception {
-        final String userName = KafkaProperties.getUsername();
         final StreamExecutionEnvironment sEnv = StreamExecutionEnvironment.getExecutionEnvironment();
         sEnv.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
@@ -83,16 +81,14 @@ public class AdvancedTimeHandling {
     static class TheRollingStonesFilterFunction implements FilterFunction<SongEvent> {
         @Override
         public boolean filter(SongEvent songEvent) {
-            // TODO put your code here
-            return true;
+            return songEvent.getSong().getAuthor().equals("The Rolling Stones");
         }
     }
 
     static class UserKeySelector implements KeySelector<SongEvent, Integer> {
         @Override
         public Integer getKey(SongEvent songEvent) {
-            // TODO put your code here
-            return null;
+            return songEvent.getUserId();
         }
     }
 
@@ -137,7 +133,6 @@ public class AdvancedTimeHandling {
 
         @Override
         public void onTimer(long timestamp, OnTimerContext ctx, Collector<SongCount> out) throws Exception {
-            Integer currentCounter = counterState.value();
             Long lastTimestamp = lastTimestampState.value();
 
             // TODO put your code here

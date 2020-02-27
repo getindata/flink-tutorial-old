@@ -42,8 +42,6 @@ import javax.annotation.Nullable;
 public class KafkaWindowAggregations {
 
     public static void main(String[] args) throws Exception {
-        final String userName = KafkaProperties.getUsername();
-
         final StreamExecutionEnvironment sEnv = StreamExecutionEnvironment.getExecutionEnvironment();
         sEnv.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 

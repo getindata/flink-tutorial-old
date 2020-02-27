@@ -38,8 +38,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
-import java.time.Duration;
-import java.time.Instant;
 
 
 public class AdvancedTimeHandling {
@@ -127,7 +125,7 @@ public class AdvancedTimeHandling {
                 LOG.debug("A user {} listens to The Rolling Stones song for the first time.", context.getCurrentKey());
                 // Initialize state.
                 counterState.update(1);
-                lastTimestampState.update(songEvent.getTimestamp());
+                lastTimestampState.update(context.timestamp());
             } else {
                 currentCounter++;
                 LOG.debug("A user {} listens to a next ({}) The Rolling Stones song.", context.getCurrentKey(), currentCounter);
@@ -135,7 +133,7 @@ public class AdvancedTimeHandling {
                     collector.collect(new SongCount(context.getCurrentKey(), currentCounter));
                 }
                 counterState.update(currentCounter);
-                lastTimestamp = Math.max(lastTimestamp, songEvent.getTimestamp());
+                lastTimestamp = Math.max(lastTimestamp, context.timestamp());
                 lastTimestampState.update(lastTimestamp);
                 context.timerService().registerEventTimeTimer(lastTimestamp + FIFTEEN_MINUTES);
             }
@@ -145,8 +143,7 @@ public class AdvancedTimeHandling {
         public void onTimer(long timestamp, OnTimerContext ctx, Collector<SongCount> out) throws Exception {
             Long lastTimestamp = lastTimestampState.value();
 
-            // if now() >= lastTimestamp + 15 minutes
-            if (!Instant.ofEpochMilli(ctx.timestamp()).isBefore(Instant.ofEpochMilli(lastTimestamp).plus(Duration.ofMinutes(15)))) {
+            if (ctx.timestamp() >= lastTimestamp + FIFTEEN_MINUTES) {
                 LOG.debug("Fifteen minutes has passed for userId={}. Clearing state.", ctx.getCurrentKey());
                 counterState.clear();
                 lastTimestampState.clear();

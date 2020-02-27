@@ -22,10 +22,8 @@ import com.getindata.tutorial.base.input.SongsSource;
 import com.getindata.tutorial.base.model.SongEvent;
 import com.getindata.tutorial.base.model.UserStatistics;
 import org.apache.flink.api.common.functions.AggregateFunction;
-import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.streaming.api.datastream.DataStream;
-import org.apache.flink.streaming.api.datastream.WindowedStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.AssignerWithPunctuatedWatermarks;
 import org.apache.flink.streaming.api.functions.windowing.WindowFunction;
@@ -43,49 +41,41 @@ public class WindowAggregations {
 
         // create a stream of events from source
         final DataStream<SongEvent> events = sEnv.addSource(new SongsSource());
-        final DataStream<SongEvent> eventsInEventTime = events.assignTimestampsAndWatermarks(new SongWatermarkAssigner());
+        // In order not to copy the whole pipeline code from production to test, we made sources and sinks pluggable in
+        // the production code so that we can now inject test sources and test sinks in the tests.
+        final DataStream<UserStatistics> statistics = pipeline(events);
 
-        // song plays in user sessions
-        final WindowedStream<SongEvent, Integer, TimeWindow> windowedStream = eventsInEventTime
-                .filter(new SongFilterFunction())
-                .keyBy(new SongKeySelector())
-                .window(null /* TODO fill in the code */);
-
-        final DataStream<UserStatistics> statistics = windowedStream.aggregate(
-                new SongAggregationFunction(),
-                new SongWindowFunction()
-        );
-
+        // print results
         statistics.print();
 
         // execute streams
         sEnv.execute();
     }
 
+    static DataStream<UserStatistics> pipeline(DataStream<SongEvent> source) {
+        return source
+                .assignTimestampsAndWatermarks(new SongWatermarkAssigner())
+                .keyBy(new SongKeySelector())
+                .<TimeWindow>window(null /* TODO fill in the code */)
+                .aggregate(
+                        new SongAggregationFunction(),
+                        new SongWindowFunction()
+                );
+    }
+
     static class SongWatermarkAssigner implements AssignerWithPunctuatedWatermarks<SongEvent> {
         @Nullable
         @Override
-        public Watermark checkAndGetNextWatermark(SongEvent songEvent, long lastTimestamp) {
+        public Watermark checkAndGetNextWatermark(SongEvent songEvent, long extractedTimestamp) {
             //TODO fill in the code
-
-            // HINT: to access event timestamp, use songEvent.getTimestamp()
-            // HINT: To access user id, use songEvent.getUserId()
             return null;
         }
 
         @Override
-        public long extractTimestamp(SongEvent songEvent, long lastTimestamp) {
+        public long extractTimestamp(SongEvent songEvent, long previousElementTimestamp) {
             //TODO fill in the code
             return 0;
 
-        }
-    }
-
-    static class SongFilterFunction implements FilterFunction<SongEvent> {
-        @Override
-        public boolean filter(final SongEvent songEvent) {
-            //TODO fill in the code
-            return true;
         }
     }
 

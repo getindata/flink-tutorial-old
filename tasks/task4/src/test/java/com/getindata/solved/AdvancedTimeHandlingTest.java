@@ -42,8 +42,8 @@ class AdvancedTimeHandlingTest {
 
         List<SongCount> output = getResults(harness);
 
-        assertEquals(output.size(), 1);
-        assertEquals(output.get(0), new SongCount(10, 3));
+        assertEquals(1, output.size());
+        assertEquals(new SongCount(10, 3), output.get(0));
     }
 
     @Test
@@ -71,7 +71,7 @@ class AdvancedTimeHandlingTest {
 
         List<SongCount> output = getResults(harness);
 
-        assertEquals(output.size(), 0);
+        assertEquals(0, output.size());
     }
 
 

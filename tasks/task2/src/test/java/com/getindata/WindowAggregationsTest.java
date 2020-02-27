@@ -1,7 +1,6 @@
 package com.getindata;
 
 import com.getindata.tutorial.base.model.SongEvent;
-import com.getindata.tutorial.base.model.SongEventType;
 import com.getindata.tutorial.base.model.UserStatistics;
 import org.apache.flink.runtime.testutils.MiniClusterResourceConfiguration;
 import org.apache.flink.streaming.api.TimeCharacteristic;
@@ -55,42 +54,35 @@ class WindowAggregationsTest {
                         .setUserId(1)
                         .setSong(aSong().name("Song 1").build())
                         .setTimestamp(Instant.parse("2012-02-10T12:00:00.0Z").toEpochMilli())
-                        .setType(SongEventType.PLAY)
                         .build(),
                 aSongEvent()
                         .setUserId(1)
                         .setSong(aSong().name("Song 2").build())
                         .setTimestamp(Instant.parse("2012-02-10T12:03:00.0Z").toEpochMilli())
-                        .setType(SongEventType.PLAY)
                         .build(),
                 // gap between these two events is longer than allowed gap
                 aSongEvent()
                         .setUserId(1)
                         .setSong(aSong().name("Song 3").build())
                         .setTimestamp(Instant.parse("2012-02-10T13:00:00.0Z").toEpochMilli())
-                        .setType(SongEventType.PLAY)
                         .build(),
                 aSongEvent()
                         .setUserId(1)
                         .setSong(aSong().name("Song 4").build())
                         .setTimestamp(Instant.parse("2012-02-10T13:02:00.0Z").toEpochMilli())
-                        .setType(SongEventType.PLAY)
                         .build()
 
         );
 
         DataStreamSource<SongEvent> inputEvents = env.fromCollection(input);
-        // TODO: In order not to copy your whole pipeline code from production to test, make sources and sinks pluggable
-        // in your production code and inject special test sources and test sinks in your tests.
-        // TODO: put your code below
-        DataStream<UserStatistics> statistics = null;
+        DataStream<UserStatistics> statistics = WindowAggregations.pipeline(inputEvents);
         statistics.addSink(new CollectSink());
 
         // when
         env.execute();
 
         // then
-        assertEquals(CollectSink.values.size(), 2);
+        assertEquals(2, CollectSink.values.size());
         assertTrue(CollectSink.values.contains(
                 UserStatistics.builder()
                         .userId(1)
@@ -113,6 +105,66 @@ class WindowAggregationsTest {
         ));
     }
 
+    @Test
+    void shouldAggregateUserStatisticsForMultipleUsers() throws Exception {
+        // given
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment().setParallelism(1);
+        env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
+
+        final List<SongEvent> input = newArrayList(
+                aSongEvent()
+                        .setUserId(2)
+                        .setSong(aSong().name("Song 1").build())
+                        .setTimestamp(Instant.parse("2012-02-10T12:05:00.0Z").toEpochMilli())
+                        .build(),
+                aSongEvent()   // odd users are 5-minute delayed
+                        .setUserId(1)
+                        .setSong(aSong().name("Song 2").build())
+                        .setTimestamp(Instant.parse("2012-02-10T12:04:00.0Z").toEpochMilli())
+                        .build(),
+                aSongEvent()
+                        .setUserId(2)
+                        .setSong(aSong().name("Song 3").build())
+                        .setTimestamp(Instant.parse("2012-02-10T12:25:00.0Z").toEpochMilli())
+                        .build(),
+                aSongEvent()  // odd users are 5-minute delayed
+                        .setUserId(1)
+                        .setSong(aSong().name("Song 4").build())
+                        .setTimestamp(Instant.parse("2012-02-10T12:21:00.0Z").toEpochMilli())
+                        .build()
+        );
+
+        DataStream<SongEvent> inputEvents = env.fromCollection(input).setParallelism(1);
+        DataStream<UserStatistics> statistics = WindowAggregations.pipeline(inputEvents);
+        statistics.addSink(new CollectSink());
+
+        // when
+        env.execute();
+
+        // then
+        assertEquals(2, CollectSink.values.size());
+        assertTrue(CollectSink.values.contains(
+                UserStatistics.builder()
+                        .userId(2)
+                        .count(2)
+                        // Session start == the time of the first event from the session.
+                        .start(Instant.parse("2012-02-10T12:05:00.0Z").toEpochMilli())
+                        // Session end == the time of the last event within the session + session gap.
+                        .end(Instant.parse("2012-02-10T12:45:00.0Z").toEpochMilli())
+                        .build()
+        ));
+        assertTrue(CollectSink.values.contains(
+                UserStatistics.builder()
+                        .userId(1)
+                        .count(2)
+                        // Session start == the time of the first event from the session.
+                        .start(Instant.parse("2012-02-10T12:04:00.0Z").toEpochMilli())
+                        // Session end == the time of the last event within the session + session gap.
+                        .end(Instant.parse("2012-02-10T12:41:00.0Z").toEpochMilli())
+                        .build()
+        ));
+    }
+
     /**
      * The static variable in CollectSink is used here because Flink serializes all operators before distributing them
      * across a cluster. Communicating with operators instantiated by a local Flink mini cluster via static variables
@@ -125,9 +177,8 @@ class WindowAggregationsTest {
         static final List<UserStatistics> values = new ArrayList<>();
 
         @Override
-        public synchronized void invoke(UserStatistics value, SinkFunction.Context context) {
+        public synchronized void invoke(UserStatistics value, Context context) {
             values.add(value);
         }
     }
-
 }

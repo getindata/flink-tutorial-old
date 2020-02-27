@@ -1,7 +1,6 @@
 package com.getindata.solved;
 
 import com.getindata.tutorial.base.model.SongEvent;
-import com.getindata.tutorial.base.model.SongEventType;
 import com.getindata.tutorial.base.model.UserStatistics;
 import org.apache.flink.runtime.testutils.MiniClusterResourceConfiguration;
 import org.apache.flink.streaming.api.TimeCharacteristic;
@@ -52,26 +51,22 @@ class WindowAggregationsTest {
                         .setUserId(1)
                         .setSong(aSong().name("Song 1").build())
                         .setTimestamp(Instant.parse("2012-02-10T12:00:00.0Z").toEpochMilli())
-                        .setType(SongEventType.PLAY)
                         .build(),
                 aSongEvent()
                         .setUserId(1)
                         .setSong(aSong().name("Song 2").build())
                         .setTimestamp(Instant.parse("2012-02-10T12:03:00.0Z").toEpochMilli())
-                        .setType(SongEventType.PLAY)
                         .build(),
                 // gap between these two events is longer than allowed gap
                 aSongEvent()
                         .setUserId(1)
                         .setSong(aSong().name("Song 3").build())
                         .setTimestamp(Instant.parse("2012-02-10T13:00:00.0Z").toEpochMilli())
-                        .setType(SongEventType.PLAY)
                         .build(),
                 aSongEvent()
                         .setUserId(1)
                         .setSong(aSong().name("Song 4").build())
                         .setTimestamp(Instant.parse("2012-02-10T13:02:00.0Z").toEpochMilli())
-                        .setType(SongEventType.PLAY)
                         .build()
 
         );
@@ -118,25 +113,21 @@ class WindowAggregationsTest {
                         .setUserId(2)
                         .setSong(aSong().name("Song 1").build())
                         .setTimestamp(Instant.parse("2012-02-10T12:05:00.0Z").toEpochMilli())
-                        .setType(SongEventType.PLAY)
                         .build(),
                 aSongEvent()   // odd users are 5-minute delayed
                         .setUserId(1)
                         .setSong(aSong().name("Song 2").build())
                         .setTimestamp(Instant.parse("2012-02-10T12:04:00.0Z").toEpochMilli())
-                        .setType(SongEventType.PLAY)
                         .build(),
                 aSongEvent()
                         .setUserId(2)
                         .setSong(aSong().name("Song 3").build())
                         .setTimestamp(Instant.parse("2012-02-10T12:25:00.0Z").toEpochMilli())
-                        .setType(SongEventType.PLAY)
                         .build(),
                 aSongEvent()  // odd users are 5-minute delayed
                         .setUserId(1)
                         .setSong(aSong().name("Song 4").build())
                         .setTimestamp(Instant.parse("2012-02-10T12:21:00.0Z").toEpochMilli())
-                        .setType(SongEventType.PLAY)
                         .build()
         );
 
