@@ -16,7 +16,8 @@ public class FilterSongs {
                 .addSource(new SongsSource())
                 // Chaining is disabled for presentation purposes - with chaining enabled job graph in Flink UI is just boring :)
                 .disableChaining()
-                .filter(new SongFilterFunction());
+                .filter(new SongFilterFunction())
+                .disableChaining();
 
         // print filtered events
         events.print();

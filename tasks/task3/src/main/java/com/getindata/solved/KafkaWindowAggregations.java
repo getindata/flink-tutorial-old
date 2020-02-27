@@ -20,7 +20,6 @@ package com.getindata.solved;
 
 import com.getindata.JsonDeserializationSchema;
 import com.getindata.JsonSerializationSchema;
-import com.getindata.tutorial.base.kafka.KafkaProperties;
 import com.getindata.tutorial.base.model.SongEvent;
 import com.getindata.tutorial.base.model.SongEventType;
 import com.getindata.tutorial.base.model.UserStatistics;
@@ -42,21 +41,28 @@ import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer;
 import org.apache.flink.util.Collector;
 
 import javax.annotation.Nullable;
+import java.util.Properties;
 
 public class KafkaWindowAggregations {
 
     public static void main(String[] args) throws Exception {
-        final String userName = KafkaProperties.getUsername();
-
         final StreamExecutionEnvironment sEnv = StreamExecutionEnvironment.getExecutionEnvironment();
         sEnv.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
+
+        final Properties kafkaProperties = new Properties();
+        kafkaProperties.setProperty("bootstrap.servers", "flink-slave-01.c.getindata-training.internal:9092,flink-slave-02.c.getindata-training.internal:9092,flink-slave-03.c.getindata-training.internal:9092,flink-slave-04.c.getindata-training.internal:9092,flink-slave-05.c.getindata-training.internal:9092");
+        // TODO: Replace with the line below if you use docker.
+        // kafkaProperties.setProperty("bootstrap.servers", "kafka:9092");
+
+        final String inputTopic = "songs_alpaca"; // FIXME put your user name here
+        final String outputTopic = "statistics_alpaca"; // FIXME put your user name here
 
         // create a stream of events from source
         final DataStream<SongEvent> events = sEnv.addSource(
                 new FlinkKafkaConsumer<>(
-                        KafkaProperties.getTopic(userName),
+                        inputTopic,
                         new JsonDeserializationSchema<>(SongEvent.class),
-                        KafkaProperties.getKafkaProperties()
+                        kafkaProperties
                 )
         );
 
@@ -64,9 +70,9 @@ public class KafkaWindowAggregations {
 
         statistics.addSink(
                 new FlinkKafkaProducer<>(
-                        KafkaProperties.getOutputTopic(userName),
-                        new JsonSerializationSchema<>(KafkaProperties.getOutputTopic(userName)),
-                        KafkaProperties.getKafkaProperties(),
+                        outputTopic,
+                        new JsonSerializationSchema<>(outputTopic),
+                        kafkaProperties,
                         FlinkKafkaProducer.Semantic.EXACTLY_ONCE
                 )
         );

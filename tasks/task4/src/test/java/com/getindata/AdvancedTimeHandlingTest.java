@@ -46,8 +46,8 @@ class AdvancedTimeHandlingTest {
 
         List<SongCount> output = getResults(harness);
 
-        assertEquals(output.size(), 1);
-        assertEquals(output.get(0), new SongCount(10, 3));
+        assertEquals(1, output.size());
+        assertEquals(new SongCount(10, 3), output.get(0));
     }
 
     @Test
@@ -71,11 +71,11 @@ class AdvancedTimeHandlingTest {
                 aRollingStonesSongEvent().setUserId(10).setTimestamp(Instant.parse("2020-02-10T12:30:00.0Z").toEpochMilli()).build(),
                 Instant.parse("2020-02-10T12:30:00.0Z").toEpochMilli()
         );
-        harness.processWatermark(Instant.parse("2020-02-10T12:35:00.0Z").toEpochMilli());
+        harness.processWatermark(Instant.parse("2020-02-10T12:25:00.0Z").toEpochMilli());
 
         List<SongCount> output = getResults(harness);
 
-        assertEquals(output.size(), 0);
+        assertEquals(0, output.size());
     }
 
 
