@@ -21,6 +21,13 @@ package com.getindata.solved;
 import com.getindata.tutorial.base.input.SongsSource;
 import com.getindata.tutorial.base.model.SongCount;
 import com.getindata.tutorial.base.model.SongEvent;
+import org.apache.flink.api.common.eventtime.TimestampAssigner;
+import org.apache.flink.api.common.eventtime.TimestampAssignerSupplier;
+import org.apache.flink.api.common.eventtime.Watermark;
+import org.apache.flink.api.common.eventtime.WatermarkGenerator;
+import org.apache.flink.api.common.eventtime.WatermarkGeneratorSupplier;
+import org.apache.flink.api.common.eventtime.WatermarkOutput;
+import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
@@ -30,14 +37,10 @@ import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.KeyedStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.api.functions.AssignerWithPunctuatedWatermarks;
 import org.apache.flink.streaming.api.functions.KeyedProcessFunction;
-import org.apache.flink.streaming.api.watermark.Watermark;
 import org.apache.flink.util.Collector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
 
 
 public class AdvancedTimeHandling {
@@ -48,7 +51,7 @@ public class AdvancedTimeHandling {
 
         KeyedStream<SongEvent, Integer> keyedSongs =
                 sEnv.addSource(new SongsSource())
-                        .assignTimestampsAndWatermarks(new SongWatermarkAssigner())
+                        .assignTimestampsAndWatermarks(new SongWatermarkStrategy())
                         .filter(new TheRollingStonesFilterFunction())
                         .keyBy(new UserKeySelector());
 
@@ -59,22 +62,31 @@ public class AdvancedTimeHandling {
         sEnv.execute();
     }
 
-    static class SongWatermarkAssigner implements AssignerWithPunctuatedWatermarks<SongEvent> {
+    static class SongWatermarkStrategy implements WatermarkStrategy<SongEvent> {
 
         private static final long FIVE_MINUTES = 5 * 1000 * 60L;
 
-        @Nullable
         @Override
-        public Watermark checkAndGetNextWatermark(SongEvent songEvent, long lastTimestamp) {
-            return songEvent.getUserId() % 2 == 1
-                    ? new Watermark(songEvent.getTimestamp())
-                    : new Watermark(songEvent.getTimestamp() - FIVE_MINUTES);
+        public WatermarkGenerator<SongEvent> createWatermarkGenerator(WatermarkGeneratorSupplier.Context context) {
+            return new WatermarkGenerator<SongEvent>() {
+                @Override
+                public void onEvent(SongEvent songEvent, long eventTimestamp, WatermarkOutput output) {
+                    org.apache.flink.api.common.eventtime.Watermark watermark = songEvent.getUserId() % 2 == 1
+                            ? new org.apache.flink.api.common.eventtime.Watermark(songEvent.getTimestamp())
+                            : new Watermark(songEvent.getTimestamp() - FIVE_MINUTES);
+                    output.emitWatermark(watermark);
+                }
 
+                @Override
+                public void onPeriodicEmit(WatermarkOutput output) {
+                    // don't need to do anything because we emit in reaction to events above
+                }
+            };
         }
 
         @Override
-        public long extractTimestamp(SongEvent songEvent, long lastTimestamp) {
-            return songEvent.getTimestamp();
+        public TimestampAssigner<SongEvent> createTimestampAssigner(TimestampAssignerSupplier.Context context) {
+            return (element, recordTimestamp) -> element.getTimestamp();
         }
     }
 
