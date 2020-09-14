@@ -71,8 +71,8 @@ public class AdvancedTimeHandling {
             return new WatermarkGenerator<SongEvent>() {
                 @Override
                 public void onEvent(SongEvent songEvent, long eventTimestamp, WatermarkOutput output) {
-                    org.apache.flink.api.common.eventtime.Watermark watermark = songEvent.getUserId() % 2 == 1
-                            ? new org.apache.flink.api.common.eventtime.Watermark(songEvent.getTimestamp())
+                    Watermark watermark = songEvent.getUserId() % 2 == 1
+                            ? new Watermark(songEvent.getTimestamp())
                             : new Watermark(songEvent.getTimestamp() - FIVE_MINUTES);
                     output.emitWatermark(watermark);
                 }
