@@ -18,10 +18,16 @@
 
 package com.getindata;
 
-import com.getindata.tutorial.base.kafka.KafkaProperties;
 import com.getindata.tutorial.base.model.SongEvent;
 import com.getindata.tutorial.base.model.SongEventType;
 import com.getindata.tutorial.base.model.UserStatistics;
+import org.apache.flink.api.common.eventtime.TimestampAssigner;
+import org.apache.flink.api.common.eventtime.TimestampAssignerSupplier;
+import org.apache.flink.api.common.eventtime.Watermark;
+import org.apache.flink.api.common.eventtime.WatermarkGenerator;
+import org.apache.flink.api.common.eventtime.WatermarkGeneratorSupplier;
+import org.apache.flink.api.common.eventtime.WatermarkOutput;
+import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.AggregateFunction;
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.java.functions.KeySelector;
@@ -29,15 +35,11 @@ import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.WindowedStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.api.functions.AssignerWithPunctuatedWatermarks;
 import org.apache.flink.streaming.api.functions.windowing.WindowFunction;
-import org.apache.flink.streaming.api.watermark.Watermark;
 import org.apache.flink.streaming.api.windowing.assigners.EventTimeSessionWindows;
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.util.Collector;
-
-import javax.annotation.Nullable;
 
 public class KafkaWindowAggregations {
 
@@ -64,7 +66,7 @@ public class KafkaWindowAggregations {
 
 
     static DataStream<UserStatistics> pipeline(DataStream<SongEvent> source) {
-        final DataStream<SongEvent> eventsInEventTime = source.assignTimestampsAndWatermarks(new SongWatermarkAssigner());
+        final DataStream<SongEvent> eventsInEventTime = source.assignTimestampsAndWatermarks(new SongWatermarkStrategy());
 
         // song plays in user sessions
         final WindowedStream<SongEvent, Integer, TimeWindow> windowedStream = eventsInEventTime
@@ -78,22 +80,31 @@ public class KafkaWindowAggregations {
         );
     }
 
-    static class SongWatermarkAssigner implements AssignerWithPunctuatedWatermarks<SongEvent> {
+    static class SongWatermarkStrategy implements WatermarkStrategy<SongEvent> {
 
         private static final long FIVE_MINUTES = 5 * 1000 * 60L;
 
-        @Nullable
         @Override
-        public Watermark checkAndGetNextWatermark(SongEvent songEvent, long lastTimestamp) {
-            return songEvent.getUserId() % 2 == 1
-                    ? new Watermark(songEvent.getTimestamp())
-                    : new Watermark(songEvent.getTimestamp() - FIVE_MINUTES);
+        public WatermarkGenerator<SongEvent> createWatermarkGenerator(WatermarkGeneratorSupplier.Context context) {
+            return new WatermarkGenerator<SongEvent>() {
+                @Override
+                public void onEvent(SongEvent songEvent, long eventTimestamp, WatermarkOutput output) {
+                    Watermark watermark = songEvent.getUserId() % 2 == 1
+                            ? new Watermark(songEvent.getTimestamp())
+                            : new Watermark(songEvent.getTimestamp() - FIVE_MINUTES);
+                    output.emitWatermark(watermark);
+                }
 
+                @Override
+                public void onPeriodicEmit(WatermarkOutput output) {
+                    // don't need to do anything because we emit in reaction to events above
+                }
+            };
         }
 
         @Override
-        public long extractTimestamp(SongEvent songEvent, long lastTimestamp) {
-            return songEvent.getTimestamp();
+        public TimestampAssigner<SongEvent> createTimestampAssigner(TimestampAssignerSupplier.Context context) {
+            return (element, recordTimestamp) -> element.getTimestamp();
         }
     }
 

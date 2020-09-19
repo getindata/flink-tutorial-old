@@ -21,14 +21,19 @@ package com.getindata.tutorial.base.input;
 import com.getindata.tutorial.base.kafka.KafkaProperties;
 import com.getindata.tutorial.base.model.SongEvent;
 import com.getindata.tutorial.base.model.SongEventType;
+import org.apache.flink.api.common.eventtime.TimestampAssigner;
+import org.apache.flink.api.common.eventtime.TimestampAssignerSupplier;
+import org.apache.flink.api.common.eventtime.Watermark;
+import org.apache.flink.api.common.eventtime.WatermarkGenerator;
+import org.apache.flink.api.common.eventtime.WatermarkGeneratorSupplier;
+import org.apache.flink.api.common.eventtime.WatermarkOutput;
+import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.serialization.TypeInformationSerializationSchema;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.api.functions.AssignerWithPunctuatedWatermarks;
-import org.apache.flink.streaming.api.watermark.Watermark;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumerBase;
 import org.apache.flink.table.api.TableSchema;
@@ -39,7 +44,6 @@ import org.apache.flink.table.sources.tsextractors.StreamRecordTimestamp;
 import org.apache.flink.table.sources.wmstrategies.PreserveWatermarks;
 import org.apache.flink.types.Row;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 import static java.util.Collections.singletonList;
@@ -58,16 +62,27 @@ public class SongEventTableSource implements StreamTableSource<Row>, DefinedRowt
                         env.getConfig()),
                 KafkaProperties.getKafkaProperties()
         ).assignTimestampsAndWatermarks(
-                new AssignerWithPunctuatedWatermarks<SongEvent>() {
-                    @Nullable
+                new WatermarkStrategy<SongEvent>() {
                     @Override
-                    public Watermark checkAndGetNextWatermark(SongEvent songEvent, long lastTimestamp) {
-                        return (songEvent.getType() == SongEventType.PLAY) ? new Watermark(lastTimestamp) : null;
+                    public WatermarkGenerator<SongEvent> createWatermarkGenerator(WatermarkGeneratorSupplier.Context context) {
+                        return new WatermarkGenerator<SongEvent>() {
+                            @Override
+                            public void onEvent(SongEvent event, long eventTimestamp, WatermarkOutput output) {
+                                if (event.getType() == SongEventType.PLAY) {
+                                    output.emitWatermark(new Watermark(eventTimestamp));
+                                }
+                            }
+
+                            @Override
+                            public void onPeriodicEmit(WatermarkOutput output) {
+                                // don't need to do anything because we emit in reaction to events above
+                            }
+                        };
                     }
 
                     @Override
-                    public long extractTimestamp(SongEvent songEvent, long lastTimestamp) {
-                        return songEvent.getTimestamp();
+                    public TimestampAssigner<SongEvent> createTimestampAssigner(TimestampAssignerSupplier.Context context) {
+                        return (element, recordTimestamp) -> element.getTimestamp();
                     }
                 }
         );

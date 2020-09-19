@@ -21,17 +21,19 @@ package com.getindata;
 import com.getindata.tutorial.base.input.SongsSource;
 import com.getindata.tutorial.base.model.SongEvent;
 import com.getindata.tutorial.base.model.UserStatistics;
+import org.apache.flink.api.common.eventtime.TimestampAssigner;
+import org.apache.flink.api.common.eventtime.TimestampAssignerSupplier;
+import org.apache.flink.api.common.eventtime.WatermarkGenerator;
+import org.apache.flink.api.common.eventtime.WatermarkGeneratorSupplier;
+import org.apache.flink.api.common.eventtime.WatermarkOutput;
+import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.AggregateFunction;
 import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.api.functions.AssignerWithPunctuatedWatermarks;
 import org.apache.flink.streaming.api.functions.windowing.WindowFunction;
-import org.apache.flink.streaming.api.watermark.Watermark;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.util.Collector;
-
-import javax.annotation.Nullable;
 
 public class WindowAggregations {
 
@@ -54,7 +56,7 @@ public class WindowAggregations {
 
     static DataStream<UserStatistics> pipeline(DataStream<SongEvent> source) {
         return source
-                .assignTimestampsAndWatermarks(new SongWatermarkAssigner())
+                .assignTimestampsAndWatermarks(new SongWatermarkStrategy())
                 .keyBy(new SongKeySelector())
                 .<TimeWindow>window(null /* TODO fill in the code */)
                 .aggregate(
@@ -63,19 +65,25 @@ public class WindowAggregations {
                 );
     }
 
-    static class SongWatermarkAssigner implements AssignerWithPunctuatedWatermarks<SongEvent> {
-        @Nullable
+    static class SongWatermarkStrategy implements WatermarkStrategy<SongEvent> {
         @Override
-        public Watermark checkAndGetNextWatermark(SongEvent songEvent, long extractedTimestamp) {
-            //TODO fill in the code
-            return null;
+        public WatermarkGenerator<SongEvent> createWatermarkGenerator(WatermarkGeneratorSupplier.Context context) {
+            return new WatermarkGenerator<SongEvent>() {
+                @Override
+                public void onEvent(SongEvent event, long eventTimestamp, WatermarkOutput output) {
+                    /* TODO fill in the code */
+                }
+
+                @Override
+                public void onPeriodicEmit(WatermarkOutput output) {
+                    // don't need to do anything because we emit in reaction to events above
+                }
+            };
         }
 
         @Override
-        public long extractTimestamp(SongEvent songEvent, long previousElementTimestamp) {
-            //TODO fill in the code
-            return 0;
-
+        public TimestampAssigner<SongEvent> createTimestampAssigner(TimestampAssignerSupplier.Context context) {
+            return (element, recordTimestamp) -> 0L;    // TODO: return proper value
         }
     }
 
