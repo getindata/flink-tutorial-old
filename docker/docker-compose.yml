@@ -42,3 +42,27 @@ services:
       - "jobmanager:jobmanager"
     environment:
       - JOB_MANAGER_RPC_ADDRESS=jobmanager
+
+  es:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.9.1
+    container_name: es
+    environment:
+      - node.name=es
+      - cluster.name=es-docker-cluster
+      - cluster.initial_master_nodes=es
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - 9200:9200
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.9.1
+    container_name: kibana
+    links:
+      - es:elasticsearch
+    ports:
+      - 5601:5601
