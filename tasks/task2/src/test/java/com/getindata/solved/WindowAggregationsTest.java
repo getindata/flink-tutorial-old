@@ -1,6 +1,6 @@
 package com.getindata.solved;
 
-import com.getindata.tutorial.base.model.SongEvent;
+import com.getindata.tutorial.base.model.EnrichedSongEvent;
 import com.getindata.tutorial.base.model.UserStatistics;
 import org.apache.flink.runtime.testutils.MiniClusterResourceConfiguration;
 import org.apache.flink.streaming.api.TimeCharacteristic;
@@ -46,7 +46,7 @@ class WindowAggregationsTest {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
-        List<SongEvent> input = newArrayList(
+        List<EnrichedSongEvent> input = newArrayList(
                 aSongEvent()
                         .setUserId(1)
                         .setSong(aSong().name("Song 1").build())
@@ -71,7 +71,7 @@ class WindowAggregationsTest {
 
         );
 
-        DataStreamSource<SongEvent> inputEvents = env.fromCollection(input);
+        DataStreamSource<EnrichedSongEvent> inputEvents = env.fromCollection(input);
         DataStream<UserStatistics> statistics = WindowAggregations.pipeline(inputEvents);
         statistics.addSink(new CollectSink());
 
@@ -108,7 +108,7 @@ class WindowAggregationsTest {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment().setParallelism(1);
         env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
-        final List<SongEvent> input = newArrayList(
+        final List<EnrichedSongEvent> input = newArrayList(
                 aSongEvent()
                         .setUserId(2)
                         .setSong(aSong().name("Song 1").build())
@@ -131,7 +131,7 @@ class WindowAggregationsTest {
                         .build()
         );
 
-        DataStream<SongEvent> inputEvents = env.fromCollection(input).setParallelism(1);
+        DataStream<EnrichedSongEvent> inputEvents = env.fromCollection(input).setParallelism(1);
         DataStream<UserStatistics> statistics = WindowAggregations.pipeline(inputEvents);
         statistics.addSink(new CollectSink());
 

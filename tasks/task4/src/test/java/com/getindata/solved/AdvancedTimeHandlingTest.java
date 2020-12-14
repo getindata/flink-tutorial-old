@@ -2,8 +2,8 @@ package com.getindata.solved;
 
 import com.getindata.solved.AdvancedTimeHandling.SongCountingProcessFunction;
 import com.getindata.solved.AdvancedTimeHandling.UserKeySelector;
+import com.getindata.tutorial.base.model.EnrichedSongEvent;
 import com.getindata.tutorial.base.model.SongCount;
-import com.getindata.tutorial.base.model.SongEvent;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.streaming.api.operators.KeyedProcessOperator;
 import org.apache.flink.streaming.runtime.streamrecord.StreamRecord;
@@ -22,7 +22,7 @@ class AdvancedTimeHandlingTest {
     @Test
     void shouldEmitNotificationIfUserListensToTheBandAtLeastThreeTimes() throws Exception {
         SongCountingProcessFunction function = new SongCountingProcessFunction();
-        KeyedOneInputStreamOperatorTestHarness<Integer, SongEvent, SongCount> harness = getHarness(function);
+        KeyedOneInputStreamOperatorTestHarness<Integer, EnrichedSongEvent, SongCount> harness = getHarness(function);
 
         harness.open();
 
@@ -49,7 +49,7 @@ class AdvancedTimeHandlingTest {
     @Test
     void shouldNotEmitNotificationIfGapBetweenSongsIsTooLong() throws Exception {
         SongCountingProcessFunction function = new SongCountingProcessFunction();
-        KeyedOneInputStreamOperatorTestHarness<Integer, SongEvent, SongCount> harness = getHarness(function);
+        KeyedOneInputStreamOperatorTestHarness<Integer, EnrichedSongEvent, SongCount> harness = getHarness(function);
 
         harness.open();
 
@@ -75,8 +75,8 @@ class AdvancedTimeHandlingTest {
     }
 
 
-    private KeyedOneInputStreamOperatorTestHarness<Integer, SongEvent, SongCount> getHarness(SongCountingProcessFunction function) throws Exception {
-        KeyedProcessOperator<Integer, SongEvent, SongCount> keyedProcessOperator = new KeyedProcessOperator<>(function);
+    private KeyedOneInputStreamOperatorTestHarness<Integer, EnrichedSongEvent, SongCount> getHarness(SongCountingProcessFunction function) throws Exception {
+        KeyedProcessOperator<Integer, EnrichedSongEvent, SongCount> keyedProcessOperator = new KeyedProcessOperator<>(function);
         return new KeyedOneInputStreamOperatorTestHarness<>(
                 keyedProcessOperator,
                 new UserKeySelector(),
@@ -84,7 +84,7 @@ class AdvancedTimeHandlingTest {
         );
     }
 
-    private List<SongCount> getResults(KeyedOneInputStreamOperatorTestHarness<Integer, SongEvent, SongCount> harness) {
+    private List<SongCount> getResults(KeyedOneInputStreamOperatorTestHarness<Integer, EnrichedSongEvent, SongCount> harness) {
         return harness.extractOutputStreamRecords()
                 .stream()
                 .map(StreamRecord::getValue)

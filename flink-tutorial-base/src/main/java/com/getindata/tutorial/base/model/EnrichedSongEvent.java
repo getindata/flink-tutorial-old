@@ -5,29 +5,29 @@ import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.annotatio
 import java.time.Instant;
 
 @JsonSerialize
-public class SongEvent {
+public class EnrichedSongEvent {
 
-    public static SongEventBuilder builder() {
-        return new SongEventBuilder();
+    public static EnrichedSongEventBuilder builder() {
+        return new EnrichedSongEventBuilder();
     }
 
-    private long songId;
+    private Song song;
     private long timestamp;
     private SongEventType type;
     private int userId;
 
-    public SongEvent() {
+    public EnrichedSongEvent() {
     }
 
-    public SongEvent(long songId, long timestamp, SongEventType type, int userId) {
-        this.songId = songId;
+    public EnrichedSongEvent(Song song, long timestamp, SongEventType type, int userId) {
+        this.song = song;
         this.timestamp = timestamp;
         this.type = type;
         this.userId = userId;
     }
 
-    public long getSongId() {
-        return songId;
+    public Song getSong() {
+        return song;
     }
 
     public long getTimestamp() {
@@ -42,8 +42,8 @@ public class SongEvent {
         return userId;
     }
 
-    public void setSongId(long songId) {
-        this.songId = songId;
+    public void setSong(Song song) {
+        this.song = song;
     }
 
     public void setTimestamp(long timestamp) {
@@ -60,8 +60,8 @@ public class SongEvent {
 
     @Override
     public String toString() {
-        return "SongEvent{" +
-                "songId=" + songId +
+        return "EnrichedSongEvent{" +
+                "song=" + song +
                 ", timestamp=" + Instant.ofEpochMilli(timestamp) +
                 ", type=" + type +
                 ", userId=" + userId +

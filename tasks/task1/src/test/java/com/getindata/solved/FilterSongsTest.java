@@ -1,7 +1,7 @@
 package com.getindata.solved;
 
 import com.getindata.solved.FilterSongs.SongFilterFunction;
-import com.getindata.tutorial.base.model.SongEvent;
+import com.getindata.tutorial.base.model.EnrichedSongEvent;
 import org.junit.jupiter.api.Test;
 
 import static com.getindata.tutorial.base.model.TestDataBuilders.aSong;
@@ -15,7 +15,7 @@ class FilterSongsTest {
     void shouldAcceptRelevantSong() {
         SongFilterFunction filterFunction = new SongFilterFunction();
 
-        SongEvent event = aSongEvent()
+        EnrichedSongEvent event = aSongEvent()
                 .setSong(aSong().author("Adele").build())
                 .build();
 
@@ -26,7 +26,7 @@ class FilterSongsTest {
     void shouldFilterIrrelevantSongs() {
         SongFilterFunction filterFunction = new SongFilterFunction();
 
-        SongEvent event = aSongEvent()
+        EnrichedSongEvent event = aSongEvent()
                 .setSong(aSong().author("Queen").build())
                 .build();
 

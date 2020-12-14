@@ -4,13 +4,14 @@ public class TestDataBuilders {
 
     public static SongBuilder aSong() {
         return new SongBuilder()
+                .id(1)
                 .length(100)
                 .name("Some Song")
                 .author("John Doe");
     }
 
-    public static SongEventBuilder aSongEvent() {
-        return new SongEventBuilder()
+    public static EnrichedSongEventBuilder aSongEvent() {
+        return new EnrichedSongEventBuilder()
                 .setSong(aSong().build())
                 .setTimestamp(1000L)
                 .setType(SongEventType.PLAY)
@@ -24,7 +25,7 @@ public class TestDataBuilders {
                 .author("The Rolling Stones");
     }
 
-    public static SongEventBuilder aRollingStonesSongEvent() {
+    public static EnrichedSongEventBuilder aRollingStonesSongEvent() {
         return aSongEvent()
                 .setSong(aRollingStonesSong().build());
     }

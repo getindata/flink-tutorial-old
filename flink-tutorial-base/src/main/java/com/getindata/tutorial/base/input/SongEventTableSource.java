@@ -93,9 +93,7 @@ public class SongEventTableSource implements StreamTableSource<Row>, DefinedRowt
                     @Override
                     public Row map(SongEvent songEvent) throws Exception {
                         return Row.of(
-                                songEvent.getSong().getName(),
-                                songEvent.getSong().getLength(),
-                                songEvent.getSong().getAuthor(),
+                                songEvent.getSongId(),
                                 songEvent.getUserId(),
                                 songEvent.getType().toString());
                     }
@@ -106,8 +104,8 @@ public class SongEventTableSource implements StreamTableSource<Row>, DefinedRowt
     @Override
     public TypeInformation<Row> getReturnType() {
         return Types.ROW_NAMED(
-                new String[]{"song_name", "song_length", "song_author", "userId", "type"},
-                Types.STRING, Types.LONG, Types.STRING, Types.INT, Types.STRING
+                new String[]{"songId", "userId", "type"},
+                Types.LONG, Types.INT, Types.STRING
         );
     }
 
