@@ -4,7 +4,6 @@ import com.getindata.tutorial.base.enrichmennt.EnrichmentService;
 import com.getindata.tutorial.base.input.SongsSource;
 import com.getindata.tutorial.base.model.EnrichedSongEvent;
 import com.getindata.tutorial.base.model.SongEvent;
-import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.configuration.Configuration;
@@ -13,7 +12,7 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.types.Either;
 import org.apache.flink.util.Collector;
 
-public class FilterSongs {
+public class EnrichSongs {
 
     public static void main(String[] args) throws Exception {
         final StreamExecutionEnvironment sEnv = StreamExecutionEnvironment.getExecutionEnvironment();
@@ -26,7 +25,6 @@ public class FilterSongs {
                 .map(new EnrichmentFunction());
 
         events.flatMap(new SelectValidEvents())
-                .filter(new SongFilterFunction())
                 .print();
 
         events.flatMap(new SelectInvalidEvents())
@@ -35,29 +33,6 @@ public class FilterSongs {
 
         // execute streams
         sEnv.execute("Example program");
-    }
-
-    static class SongFilterFunction implements FilterFunction<EnrichedSongEvent> {
-
-        @Override
-        public boolean filter(EnrichedSongEvent songEvent) {
-            // todo: fill in the code
-            return true;
-        }
-    }
-
-    static class SelectValidEvents implements FlatMapFunction<Either<SongEvent, EnrichedSongEvent>, EnrichedSongEvent> {
-        @Override
-        public void flatMap(Either<SongEvent, EnrichedSongEvent> event, Collector<EnrichedSongEvent> collector) throws Exception {
-            // todo: fill in the code
-        }
-    }
-
-    static class SelectInvalidEvents implements FlatMapFunction<Either<SongEvent, EnrichedSongEvent>, SongEvent> {
-        @Override
-        public void flatMap(Either<SongEvent, EnrichedSongEvent> event, Collector<SongEvent> collector) throws Exception {
-            // todo: fill in the code
-        }
     }
 
     static class EnrichmentFunction extends RichMapFunction<SongEvent, Either<SongEvent, EnrichedSongEvent>> {
@@ -74,6 +49,20 @@ public class FilterSongs {
         public Either<SongEvent, EnrichedSongEvent> map(SongEvent songEvent) throws Exception {
             // todo: fill in the code
             return Either.Left(songEvent);
+        }
+    }
+
+    static class SelectValidEvents implements FlatMapFunction<Either<SongEvent, EnrichedSongEvent>, EnrichedSongEvent> {
+        @Override
+        public void flatMap(Either<SongEvent, EnrichedSongEvent> event, Collector<EnrichedSongEvent> collector) throws Exception {
+            // todo: fill in the code
+        }
+    }
+
+    static class SelectInvalidEvents implements FlatMapFunction<Either<SongEvent, EnrichedSongEvent>, SongEvent> {
+        @Override
+        public void flatMap(Either<SongEvent, EnrichedSongEvent> event, Collector<SongEvent> collector) throws Exception {
+            // todo: fill in the code
         }
     }
 }

@@ -18,6 +18,14 @@ public class TestDataBuilders {
                 .setUserId(10);
     }
 
+    public static SongEventBuilder aRawSongEvent() {
+        return new SongEventBuilder()
+                .setSongId(1)
+                .setUserId(10)
+                .setType(SongEventType.PLAY)
+                .setTimestamp(1000L);
+    }
+
     public static SongBuilder aRollingStonesSong() {
         return new SongBuilder()
                 .length(100)
