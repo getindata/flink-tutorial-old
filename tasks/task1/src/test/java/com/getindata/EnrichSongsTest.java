@@ -14,12 +14,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 // FIXME: remove @Disabled
 @Disabled
 class EnrichSongsTest {
+    private EnrichmentFunction enrichmentFunction = new EnrichmentFunction();
 
     @Test
     void shouldEnrichExistingSong() throws Exception {
-        EnrichmentFunction enrichmentFunction = new EnrichmentFunction();
-        enrichmentFunction.open(null);
-
         // todo: build a test object here
         SongEvent event = aRawSongEvent()
                 .build();

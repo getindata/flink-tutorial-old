@@ -36,15 +36,6 @@ public class EnrichSongs {
     }
 
     static class EnrichmentFunction extends RichMapFunction<SongEvent, Either<SongEvent, EnrichedSongEvent>> {
-
-        private transient EnrichmentService service;
-
-        @Override
-        public void open(Configuration parameters) throws Exception {
-            super.open(parameters);
-            service = new EnrichmentService();
-        }
-
         @Override
         public Either<SongEvent, EnrichedSongEvent> map(SongEvent songEvent) throws Exception {
             // todo: fill in the code
