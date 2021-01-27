@@ -48,7 +48,6 @@ class WindowAggregationsTest {
     void shouldAggregateUserStatistics() throws Exception {
         // given
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-        env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
         List<EnrichedSongEvent> input = newArrayList(
                 aSongEvent()
@@ -110,7 +109,6 @@ class WindowAggregationsTest {
     void shouldAggregateUserStatisticsForMultipleUsers() throws Exception {
         // given
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment().setParallelism(1);
-        env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
         final List<EnrichedSongEvent> input = newArrayList(
                 aSongEvent()

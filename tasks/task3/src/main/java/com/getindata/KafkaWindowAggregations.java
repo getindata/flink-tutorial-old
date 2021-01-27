@@ -27,7 +27,6 @@ public class KafkaWindowAggregations {
 
     public static void main(String[] args) throws Exception {
         final StreamExecutionEnvironment sEnv = StreamExecutionEnvironment.getExecutionEnvironment();
-        sEnv.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
         // create a stream of events from source
         final DataStream<SongEvent> events = sEnv.addSource(

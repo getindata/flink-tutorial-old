@@ -29,7 +29,6 @@ public class AdvancedTimeHandling {
 
     public static void main(String[] args) throws Exception {
         final StreamExecutionEnvironment sEnv = StreamExecutionEnvironment.getExecutionEnvironment();
-        sEnv.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
         KeyedStream<EnrichedSongEvent, Integer> keyedSongs =
                 sEnv.addSource(new EnrichedSongsSource())

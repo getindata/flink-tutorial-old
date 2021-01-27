@@ -33,7 +33,6 @@ public class KafkaWindowAggregations {
 
     public static void main(String[] args) throws Exception {
         final StreamExecutionEnvironment sEnv = StreamExecutionEnvironment.getExecutionEnvironment();
-        sEnv.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
         final Properties kafkaProperties = new Properties();
         kafkaProperties.setProperty("bootstrap.servers", "flink-slave-01.c.getindata-training.internal:9092,flink-slave-02.c.getindata-training.internal:9092,flink-slave-03.c.getindata-training.internal:9092,flink-slave-04.c.getindata-training.internal:9092,flink-slave-05.c.getindata-training.internal:9092");

@@ -25,7 +25,6 @@ public class WindowAggregations {
 
     public static void main(String[] args) throws Exception {
         final StreamExecutionEnvironment sEnv = StreamExecutionEnvironment.getExecutionEnvironment();
-        sEnv.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
         // create a stream of events from source
         final DataStream<EnrichedSongEvent> events = sEnv.addSource(new EnrichedSongsSource());
