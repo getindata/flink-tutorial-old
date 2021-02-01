@@ -1,8 +1,8 @@
 package com.getindata.tutorial.base.input.utils;
 
 import com.getindata.tutorial.base.model.Song;
-import org.joda.time.Duration;
 
+import java.time.Duration;
 import java.util.List;
 
 import static org.apache.flink.shaded.guava18.com.google.common.collect.Lists.newArrayList;
@@ -23,7 +23,7 @@ public class Songs {
     );
 
     private static int toMillis(int minutes, int seconds) {
-        return (int) Duration.standardMinutes(minutes).plus(Duration.standardSeconds(seconds)).getMillis();
+        return (int) Duration.ofMinutes(minutes).plus(Duration.ofSeconds(seconds)).toMillis();
     }
 
     private Songs() {

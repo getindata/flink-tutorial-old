@@ -1,0 +1,11 @@
+{
+    "namespace": "com.getindata.tutorial.base.model.solved",
+    "type": "record",
+    "name": "SongEventAvro",
+    "fields": [
+        {"name": "songId", "type": "long"},
+        {"name": "timestamp", "type": "long"},
+        {"name": "type", "type": "string"},
+        {"name": "userId", "type": "int"}
+    ]
+}

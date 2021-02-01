@@ -1,0 +1,12 @@
+{
+    "namespace": "com.getindata.tutorial.base.model.solved",
+    "type": "record",
+    "name": "UserStatisticsAvro",
+    "fields": [
+        {"name": "userId", "type": "long"},
+        {"name": "count", "type": "long"},
+        {"name": "start", "type": {"type": "long", "logicalType": "timestamp-millis"}},
+        {"name": "end", "type": {"type": "long", "logicalType": "timestamp-millis"}},
+        {"name": "duration", "type": "long"}
+    ]
+}
