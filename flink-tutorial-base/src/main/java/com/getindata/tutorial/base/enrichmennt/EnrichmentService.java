@@ -8,15 +8,9 @@ import static com.getindata.tutorial.base.input.utils.Songs.SONGS;
 
 public class EnrichmentService {
     /**
-     * Fetches song by it's identifier. If song could not be found - returns empty Optional.
+     * Fetches song by its identifier. If song could not be found - returns empty Optional.
      */
     public Optional<Song> getSongById(long songId) {
-        for (Song s : SONGS) {
-            if (s.getId() == songId) {
-                return Optional.of(s);
-            }
-        }
-
-        return Optional.empty();
+        return Optional.ofNullable(SONGS.get(songId));
     }
 }

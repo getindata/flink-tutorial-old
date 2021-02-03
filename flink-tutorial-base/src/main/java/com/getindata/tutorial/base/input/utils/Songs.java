@@ -3,13 +3,13 @@ package com.getindata.tutorial.base.input.utils;
 import com.getindata.tutorial.base.model.Song;
 
 import java.time.Duration;
-import java.util.List;
-
-import static org.apache.flink.shaded.guava18.com.google.common.collect.Lists.newArrayList;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Songs {
 
-    public static final List<Song> SONGS = newArrayList(
+    public static final Map<Long, Song> SONGS = Stream.of(
             new Song(1, toMillis(2, 40), "Yellow Submarine", "The Beatles"),
             new Song(2, toMillis(2, 59), "Get Off Of My Cloud", "The Rolling Stones"),
             new Song(3, toMillis(5, 28), "Let It Bleed", "The Rolling Stones"),
@@ -20,7 +20,7 @@ public class Songs {
             new Song(8, toMillis(4, 57), "Silent All These Years", "Tori Amos"),
             new Song(9, toMillis(6, 6), "Bohemian Rhapsody", "Queen"),
             new Song(10, toMillis(4, 32), "I want to break free", "Queen")
-    );
+    ).collect(Collectors.toMap(Song::getId, song -> song));
 
     private static int toMillis(int minutes, int seconds) {
         return (int) Duration.ofMinutes(minutes).plus(Duration.ofSeconds(seconds)).toMillis();

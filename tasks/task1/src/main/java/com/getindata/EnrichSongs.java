@@ -39,6 +39,7 @@ public class EnrichSongs {
         @Override
         public Either<SongEvent, EnrichedSongEvent> map(SongEvent songEvent) throws Exception {
             // todo: fill in the code
+            // todo: there is an EnrichmentService class that you can find useful
             return Either.Left(songEvent);
         }
     }
