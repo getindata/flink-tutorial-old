@@ -1,0 +1,6 @@
+{
+    "namespace": "com.getindata.tutorial.base.model",
+    "type": "record",
+    "name": "UserStatisticsAvro",
+    "fields": []
+}

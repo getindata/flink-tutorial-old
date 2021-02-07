@@ -2,9 +2,8 @@ package com.getindata.tutorial.base.model;
 
 
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import org.joda.time.Duration;
-import org.joda.time.Instant;
 
+import java.time.Instant;
 import java.util.Objects;
 
 import static com.getindata.tutorial.base.utils.DurationUtils.formatDuration;
@@ -20,7 +19,7 @@ public class UserStatistics {
     private long count;
     private Instant start;
     private Instant end;
-    private Duration duration;
+    private long duration;
 
     public long getUserId() {
         return userId;
@@ -41,9 +40,9 @@ public class UserStatistics {
     public UserStatistics(long userId, long count, long start, long end) {
         this.count = count;
         this.userId = userId;
-        this.start = new Instant(start);
-        this.end = new Instant(end);
-        this.duration = new Duration(this.start, this.end);
+        this.start = Instant.ofEpochMilli(start);
+        this.end = Instant.ofEpochMilli(end);
+        this.duration = this.end.toEpochMilli() - this.start.toEpochMilli();
     }
 
     public void setUserId(long userId) {
@@ -62,7 +61,7 @@ public class UserStatistics {
         this.end = end;
     }
 
-    public void setDuration(Duration duration) {
+    public void setDuration(long duration) {
         this.duration = duration;
     }
 

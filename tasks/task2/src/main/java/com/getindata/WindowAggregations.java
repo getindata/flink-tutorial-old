@@ -1,25 +1,7 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.getindata;
 
-import com.getindata.tutorial.base.input.SongsSource;
-import com.getindata.tutorial.base.model.SongEvent;
+import com.getindata.tutorial.base.input.EnrichedSongsSource;
+import com.getindata.tutorial.base.model.EnrichedSongEvent;
 import com.getindata.tutorial.base.model.UserStatistics;
 import org.apache.flink.api.common.eventtime.TimestampAssigner;
 import org.apache.flink.api.common.eventtime.TimestampAssignerSupplier;
@@ -39,10 +21,9 @@ public class WindowAggregations {
 
     public static void main(String[] args) throws Exception {
         final StreamExecutionEnvironment sEnv = StreamExecutionEnvironment.getExecutionEnvironment();
-        // TODO set time characteristics
 
         // create a stream of events from source
-        final DataStream<SongEvent> events = sEnv.addSource(new SongsSource());
+        final DataStream<EnrichedSongEvent> events = sEnv.addSource(new EnrichedSongsSource());
         // In order not to copy the whole pipeline code from production to test, we made sources and sinks pluggable in
         // the production code so that we can now inject test sources and test sinks in the tests.
         final DataStream<UserStatistics> statistics = pipeline(events);
@@ -54,7 +35,7 @@ public class WindowAggregations {
         sEnv.execute();
     }
 
-    static DataStream<UserStatistics> pipeline(DataStream<SongEvent> source) {
+    static DataStream<UserStatistics> pipeline(DataStream<EnrichedSongEvent> source) {
         return source
                 .assignTimestampsAndWatermarks(new SongWatermarkStrategy())
                 .keyBy(new SongKeySelector())
@@ -65,12 +46,12 @@ public class WindowAggregations {
                 );
     }
 
-    static class SongWatermarkStrategy implements WatermarkStrategy<SongEvent> {
+    static class SongWatermarkStrategy implements WatermarkStrategy<EnrichedSongEvent> {
         @Override
-        public WatermarkGenerator<SongEvent> createWatermarkGenerator(WatermarkGeneratorSupplier.Context context) {
-            return new WatermarkGenerator<SongEvent>() {
+        public WatermarkGenerator<EnrichedSongEvent> createWatermarkGenerator(WatermarkGeneratorSupplier.Context context) {
+            return new WatermarkGenerator<EnrichedSongEvent>() {
                 @Override
-                public void onEvent(SongEvent event, long eventTimestamp, WatermarkOutput output) {
+                public void onEvent(EnrichedSongEvent event, long eventTimestamp, WatermarkOutput output) {
                     /* TODO fill in the code */
                 }
 
@@ -82,27 +63,27 @@ public class WindowAggregations {
         }
 
         @Override
-        public TimestampAssigner<SongEvent> createTimestampAssigner(TimestampAssignerSupplier.Context context) {
+        public TimestampAssigner<EnrichedSongEvent> createTimestampAssigner(TimestampAssignerSupplier.Context context) {
             return (element, recordTimestamp) -> 0L;    // TODO: return proper value
         }
     }
 
-    static class SongKeySelector implements KeySelector<SongEvent, Integer> {
+    static class SongKeySelector implements KeySelector<EnrichedSongEvent, Integer> {
         @Override
-        public Integer getKey(SongEvent songEvent) throws Exception {
+        public Integer getKey(EnrichedSongEvent songEvent) throws Exception {
             //TODO fill in the code
             return null;
         }
     }
 
-    static class SongAggregationFunction implements AggregateFunction<SongEvent, Long, Long> {
+    static class SongAggregationFunction implements AggregateFunction<EnrichedSongEvent, Long, Long> {
         @Override
         public Long createAccumulator() {
             return 0L;
         }
 
         @Override
-        public Long add(SongEvent songEvent, Long count) {
+        public Long add(EnrichedSongEvent songEvent, Long count) {
             //TODO fill in the code
             return count;
         }

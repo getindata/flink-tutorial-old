@@ -1,6 +1,8 @@
 
 package com.getindata.tutorial.base.input.utils;
 
+import com.getindata.tutorial.base.model.EnrichedSongEvent;
+import com.getindata.tutorial.base.model.EnrichedSongEventBuilder;
 import com.getindata.tutorial.base.model.SongEvent;
 import com.getindata.tutorial.base.model.SongEventBuilder;
 import com.getindata.tutorial.base.model.SongEventType;
@@ -19,7 +21,7 @@ import static com.getindata.tutorial.base.input.utils.Songs.SONGS;
 @SuppressWarnings("Convert2Lambda")
 public class UserSession {
 
-    private final List<SongEvent> events;
+    private final List<EnrichedSongEvent> events;
 
     private long endTime;
 
@@ -27,9 +29,9 @@ public class UserSession {
         final Random random = new Random();
         this.endTime = startTimestamp;
         this.events = IntStream.rangeClosed(1, numberOfSongs).mapToObj(
-                i -> SONGS.get(random.nextInt(SONGS.size()))
-        ).sequential().flatMap(s -> {
-            final SongEventBuilder songEventBuilder = new SongEventBuilder();
+                i -> SONGS.get(random.nextInt(SONGS.size()) + 1)
+        ).flatMap(s -> {
+            final EnrichedSongEventBuilder songEventBuilder = new EnrichedSongEventBuilder();
             songEventBuilder.setSong(s);
             songEventBuilder.setUserId(userId);
 
@@ -37,7 +39,7 @@ public class UserSession {
             boolean wasStopped = stopChoose > 0.8;
             boolean wasSkipped = stopChoose > 0.6 && stopChoose <= 0.8;
 
-            final ArrayList<SongEvent> events = Lists
+            final ArrayList<EnrichedSongEvent> events = Lists
                     .newArrayList(songEventBuilder.setType(SongEventType.PLAY).build());
 
             if (wasStopped) {
@@ -49,10 +51,10 @@ public class UserSession {
             }
 
             return events.stream();
-        }).sequential().map(new Function<SongEvent, SongEvent>() {
+        }).sequential().map(new Function<EnrichedSongEvent, EnrichedSongEvent>() {
 
             @Override
-            public SongEvent apply(SongEvent songEvent) {
+            public EnrichedSongEvent apply(EnrichedSongEvent songEvent) {
                 if (songEvent.getType() == SongEventType.PLAY) {
                     songEvent.setTimestamp(endTime);
                     endTime = endTime + songEvent.getSong().getLength();
@@ -73,7 +75,7 @@ public class UserSession {
         return endTime;
     }
 
-    public Stream<SongEvent> songs() {
+    public Stream<EnrichedSongEvent> songs() {
         return events.stream();
     }
 }

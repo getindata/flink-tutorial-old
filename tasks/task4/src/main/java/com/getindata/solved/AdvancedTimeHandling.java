@@ -1,26 +1,8 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.getindata.solved;
 
-import com.getindata.tutorial.base.input.SongsSource;
+import com.getindata.tutorial.base.input.EnrichedSongsSource;
+import com.getindata.tutorial.base.model.EnrichedSongEvent;
 import com.getindata.tutorial.base.model.SongCount;
-import com.getindata.tutorial.base.model.SongEvent;
 import org.apache.flink.api.common.eventtime.TimestampAssigner;
 import org.apache.flink.api.common.eventtime.TimestampAssignerSupplier;
 import org.apache.flink.api.common.eventtime.Watermark;
@@ -33,7 +15,6 @@ import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
 import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.configuration.Configuration;
-import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.KeyedStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -47,10 +28,9 @@ public class AdvancedTimeHandling {
 
     public static void main(String[] args) throws Exception {
         final StreamExecutionEnvironment sEnv = StreamExecutionEnvironment.getExecutionEnvironment();
-        sEnv.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
-        KeyedStream<SongEvent, Integer> keyedSongs =
-                sEnv.addSource(new SongsSource())
+        KeyedStream<EnrichedSongEvent, Integer> keyedSongs =
+                sEnv.addSource(new EnrichedSongsSource())
                         .assignTimestampsAndWatermarks(new SongWatermarkStrategy())
                         .filter(new TheRollingStonesFilterFunction())
                         .keyBy(new UserKeySelector());
@@ -62,15 +42,15 @@ public class AdvancedTimeHandling {
         sEnv.execute();
     }
 
-    static class SongWatermarkStrategy implements WatermarkStrategy<SongEvent> {
+    static class SongWatermarkStrategy implements WatermarkStrategy<EnrichedSongEvent> {
 
         private static final long FIVE_MINUTES = 5 * 1000 * 60L;
 
         @Override
-        public WatermarkGenerator<SongEvent> createWatermarkGenerator(WatermarkGeneratorSupplier.Context context) {
-            return new WatermarkGenerator<SongEvent>() {
+        public WatermarkGenerator<EnrichedSongEvent> createWatermarkGenerator(WatermarkGeneratorSupplier.Context context) {
+            return new WatermarkGenerator<EnrichedSongEvent>() {
                 @Override
-                public void onEvent(SongEvent songEvent, long eventTimestamp, WatermarkOutput output) {
+                public void onEvent(EnrichedSongEvent songEvent, long eventTimestamp, WatermarkOutput output) {
                     Watermark watermark = songEvent.getUserId() % 2 == 1
                             ? new Watermark(songEvent.getTimestamp())
                             : new Watermark(songEvent.getTimestamp() - FIVE_MINUTES);
@@ -85,26 +65,26 @@ public class AdvancedTimeHandling {
         }
 
         @Override
-        public TimestampAssigner<SongEvent> createTimestampAssigner(TimestampAssignerSupplier.Context context) {
+        public TimestampAssigner<EnrichedSongEvent> createTimestampAssigner(TimestampAssignerSupplier.Context context) {
             return (element, recordTimestamp) -> element.getTimestamp();
         }
     }
 
-    static class TheRollingStonesFilterFunction implements FilterFunction<SongEvent> {
+    static class TheRollingStonesFilterFunction implements FilterFunction<EnrichedSongEvent> {
         @Override
-        public boolean filter(SongEvent songEvent) {
+        public boolean filter(EnrichedSongEvent songEvent) {
             return songEvent.getSong().getAuthor().equals("The Rolling Stones");
         }
     }
 
-    static class UserKeySelector implements KeySelector<SongEvent, Integer> {
+    static class UserKeySelector implements KeySelector<EnrichedSongEvent, Integer> {
         @Override
-        public Integer getKey(SongEvent songEvent) {
+        public Integer getKey(EnrichedSongEvent songEvent) {
             return songEvent.getUserId();
         }
     }
 
-    static class SongCountingProcessFunction extends KeyedProcessFunction<Integer, SongEvent, SongCount> {
+    static class SongCountingProcessFunction extends KeyedProcessFunction<Integer, EnrichedSongEvent, SongCount> {
 
         private static final Logger LOG = LoggerFactory.getLogger(SongCountingProcessFunction.class);
 
@@ -130,7 +110,7 @@ public class AdvancedTimeHandling {
         }
 
         @Override
-        public void processElement(SongEvent songEvent, Context context, Collector<SongCount> collector) throws Exception {
+        public void processElement(EnrichedSongEvent songEvent, Context context, Collector<SongCount> collector) throws Exception {
             Integer currentCounter = counterState.value();
             Long lastTimestamp = lastTimestampState.value();
             if (currentCounter == null) {

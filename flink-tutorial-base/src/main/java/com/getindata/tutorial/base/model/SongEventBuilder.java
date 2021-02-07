@@ -2,13 +2,13 @@ package com.getindata.tutorial.base.model;
 
 public class SongEventBuilder {
 
-    private Song song;
+    private long songId;
     private long timestamp;
     private SongEventType type;
     private int userId;
 
-    public SongEventBuilder setSong(Song song) {
-        this.song = song;
+    public SongEventBuilder setSongId(long songId) {
+        this.songId = songId;
         return this;
     }
 
@@ -28,7 +28,7 @@ public class SongEventBuilder {
     }
 
     public SongEvent build() {
-        return new SongEvent(song, timestamp, type, userId);
+        return new SongEvent(songId, timestamp, type, userId);
     }
 
 }

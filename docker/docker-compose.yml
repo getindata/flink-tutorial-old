@@ -21,7 +21,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
 
   jobmanager:
-    image: flink:1.11.1-scala_2.11-java8
+    image: flink:1.11.3-scala_2.11-java8
     expose:
       - "6123"
     ports:
@@ -31,7 +31,7 @@ services:
       - JOB_MANAGER_RPC_ADDRESS=jobmanager
 
   taskmanager:
-    image: flink:1.11.1-scala_2.11-java8
+    image: flink:1.11.3-scala_2.11-java8
     expose:
       - "6121"
       - "6122"
@@ -43,26 +43,13 @@ services:
     environment:
       - JOB_MANAGER_RPC_ADDRESS=jobmanager
 
-  es:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.9.1
-    container_name: es
-    environment:
-      - node.name=es
-      - cluster.name=es-docker-cluster
-      - cluster.initial_master_nodes=es
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
+  schema-registry:
+    image: confluentinc/cp-schema-registry:6.0.1
     ports:
-      - 9200:9200
-
-  kibana:
-    image: docker.elastic.co/kibana/kibana:7.9.1
-    container_name: kibana
+      - "8082:8081"
     links:
-      - es:elasticsearch
-    ports:
-      - 5601:5601
+      - "kafka:kafka"
+      - "zookeeper:zookeeper"
+    environment:
+      - SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS=kafka:9092
+      - SCHEMA_REGISTRY_HOST_NAME=schema-registry

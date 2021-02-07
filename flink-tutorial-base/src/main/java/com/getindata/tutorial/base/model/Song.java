@@ -6,6 +6,7 @@ public class Song {
         return new SongBuilder();
     }
 
+    private long id;
     private int length;
     private String name;
     private String author;
@@ -13,10 +14,15 @@ public class Song {
     public Song() {
     }
 
-    public Song(int length, String name, String author) {
+    public Song(long id, int length, String name, String author) {
+        this.id = id;
         this.length = length;
         this.name = name;
         this.author = author;
+    }
+
+    public long getId() {
+        return id;
     }
 
     public int getLength() {
@@ -31,6 +37,9 @@ public class Song {
         return author;
     }
 
+    public void setId(long id) {
+        this.id = id;
+    }
     public void setLength(int length) {
         this.length = length;
     }
@@ -46,7 +55,8 @@ public class Song {
     @Override
     public String toString() {
         return "Song{" +
-                "length=" + length +
+                "id=" + id +
+                ", length=" + length +
                 ", name='" + name + '\'' +
                 ", author='" + author + '\'' +
                 '}';
