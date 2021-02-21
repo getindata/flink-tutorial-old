@@ -7,6 +7,7 @@ import com.getindata.tutorial.base.model.Song;
 import com.getindata.tutorial.base.model.SongEvent;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.functions.RichMapFunction;
+import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.types.Either;
@@ -18,14 +19,13 @@ public class EnrichSongs {
 
     public static void main(String[] args) throws Exception {
         final StreamExecutionEnvironment sEnv = StreamExecutionEnvironment.getExecutionEnvironment();
-        final EnrichmentService service = new EnrichmentService();
 
         // create a stream of events from source
         final DataStream<Either<SongEvent, EnrichedSongEvent>> events = sEnv
                 .addSource(new SongsSource())
                 // Chaining is disabled for presentation purposes - with chaining enabled job graph in Flink UI is just boring :)
                 .disableChaining()
-                .map(new EnrichmentFunction(service));
+                .map(new EnrichmentFunction());
 
         events.flatMap(new SelectValidEvents())
                 .print();
@@ -40,10 +40,12 @@ public class EnrichSongs {
 
     static class EnrichmentFunction extends RichMapFunction<SongEvent, Either<SongEvent, EnrichedSongEvent>> {
 
-        private final EnrichmentService service;
+        private transient EnrichmentService service;
 
-        EnrichmentFunction(EnrichmentService enrichmentService) {
-            this.service = enrichmentService;
+
+        @Override
+        public void open(Configuration parameters) throws Exception {
+            this.service = new EnrichmentService();
         }
 
         @Override

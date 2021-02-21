@@ -2,6 +2,7 @@ package com.getindata;
 
 import com.getindata.tutorial.base.model.EnrichedSongEvent;
 import com.getindata.tutorial.base.model.SongEvent;
+import org.apache.flink.configuration.Configuration;
 import org.apache.flink.types.Either;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -14,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 // FIXME: remove @Disabled
 @Disabled
 class EnrichSongsTest {
+
     private EnrichmentFunction enrichmentFunction = new EnrichmentFunction();
 
     @Test
@@ -21,6 +23,7 @@ class EnrichSongsTest {
         // todo: build a test object here
         SongEvent event = aRawSongEvent()
                 .build();
+        enrichmentFunction.open(new Configuration());
 
         Either<SongEvent, EnrichedSongEvent> result = enrichmentFunction.map(event);
 
