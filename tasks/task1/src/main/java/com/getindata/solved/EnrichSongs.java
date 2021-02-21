@@ -39,6 +39,7 @@ public class EnrichSongs {
     }
 
     static class EnrichmentFunction extends RichMapFunction<SongEvent, Either<SongEvent, EnrichedSongEvent>> {
+
         private final EnrichmentService service;
 
         EnrichmentFunction(EnrichmentService enrichmentService) {
