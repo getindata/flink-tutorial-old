@@ -1,7 +1,6 @@
 package com.getindata.solved;
 
 import com.getindata.tutorial.base.kafka.KafkaProperties;
-import com.getindata.tutorial.base.model.SongEventType;
 import com.getindata.tutorial.base.model.solved.SongEventAvro;
 import com.getindata.tutorial.base.model.solved.UserStatisticsAvro;
 import org.apache.flink.api.common.eventtime.TimestampAssigner;
@@ -12,7 +11,6 @@ import org.apache.flink.api.common.eventtime.WatermarkGeneratorSupplier;
 import org.apache.flink.api.common.eventtime.WatermarkOutput;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.AggregateFunction;
-import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.formats.avro.registry.confluent.ConfluentRegistryAvroDeserializationSchema;
 import org.apache.flink.formats.avro.registry.confluent.ConfluentRegistryAvroSerializationSchema;
@@ -78,7 +76,6 @@ public class KafkaWindowAggregations {
 
         // song plays in user sessions
         final WindowedStream<SongEventAvro, Integer, TimeWindow> windowedStream = eventsInEventTime
-                .filter(new SongFilterFunction())
                 .keyBy(new SongKeySelector())
                 .window(EventTimeSessionWindows.withGap(Time.minutes(20)));
 
@@ -113,13 +110,6 @@ public class KafkaWindowAggregations {
         @Override
         public TimestampAssigner<SongEventAvro> createTimestampAssigner(TimestampAssignerSupplier.Context context) {
             return (element, recordTimestamp) -> element.getTimestamp();
-        }
-    }
-
-    static class SongFilterFunction implements FilterFunction<SongEventAvro> {
-        @Override
-        public boolean filter(final SongEventAvro songEvent) {
-            return SongEventType.valueOf(songEvent.getType()) == SongEventType.PLAY;
         }
     }
 
