@@ -1,12 +1,10 @@
 package com.getindata;
 
-import com.getindata.tutorial.base.enrichmennt.EnrichmentService;
 import com.getindata.tutorial.base.input.SongsSource;
 import com.getindata.tutorial.base.model.EnrichedSongEvent;
 import com.getindata.tutorial.base.model.SongEvent;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.functions.RichMapFunction;
-import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.types.Either;
