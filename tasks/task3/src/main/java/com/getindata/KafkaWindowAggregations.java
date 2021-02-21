@@ -9,7 +9,6 @@ import org.apache.flink.api.common.eventtime.WatermarkGeneratorSupplier;
 import org.apache.flink.api.common.eventtime.WatermarkOutput;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.AggregateFunction;
-import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.WindowedStream;
@@ -48,7 +47,6 @@ public class KafkaWindowAggregations {
 
         // song plays in user sessions
         final WindowedStream<SongEventAvro, Integer, TimeWindow> windowedStream = eventsInEventTime
-                .filter(new SongFilterFunction())
                 .keyBy(new SongKeySelector())
                 .window(EventTimeSessionWindows.withGap(Time.minutes(20)));
 
@@ -81,14 +79,6 @@ public class KafkaWindowAggregations {
         public TimestampAssigner<SongEventAvro> createTimestampAssigner(TimestampAssignerSupplier.Context context) {
             /* TODO put your code here */
             return null;
-        }
-    }
-
-    static class SongFilterFunction implements FilterFunction<SongEventAvro> {
-        @Override
-        public boolean filter(final SongEventAvro songEvent) {
-            /* TODO put your code here */
-            return false;
         }
     }
 
