@@ -56,3 +56,17 @@ services:
       - SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS=kafka:9092
       - SCHEMA_REGISTRY_HOST_NAME=schema-registry
       - SCHEMA_REGISTRY_LISTENERS=http://0.0.0.0:8082
+      - SCHEMA_REGISTRY_ACCESS_CONTROL_ALLOW_METHODS=GET,POST,PUT,OPTIONS
+      - SCHEMA_REGISTRY_ACCESS_CONTROL_ALLOW_ORIGIN='*'
+
+  schema-registry-ui:
+    image: landoop/schema-registry-ui
+    ports:
+      - "8000:8000"
+    links:
+      - "schema-registry:schema-registry"
+    depends_on:
+      - schema-registry
+    environment:
+      SCHEMAREGISTRY_URL: http://schema-registry:8082/
+      PROXY: "true"
