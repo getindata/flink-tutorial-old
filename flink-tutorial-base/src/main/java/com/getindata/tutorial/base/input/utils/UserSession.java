@@ -29,7 +29,7 @@ public class UserSession {
         final Random random = new Random();
         this.endTime = startTimestamp;
         this.events = IntStream.rangeClosed(1, numberOfSongs).mapToObj(
-                i -> SONGS.get(random.nextInt(SONGS.size()) + 1)
+                i -> SONGS.get((long) random.nextInt(SONGS.size()) + 1)
         ).flatMap(s -> {
             final EnrichedSongEventBuilder songEventBuilder = new EnrichedSongEventBuilder();
             songEventBuilder.setSong(s);

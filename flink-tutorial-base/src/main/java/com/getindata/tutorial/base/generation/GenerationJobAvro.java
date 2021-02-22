@@ -21,7 +21,7 @@ public class GenerationJobAvro extends GenerationHelper<SongEventAvro> {
                         false,
                         ConfluentRegistryAvroSerializationSchema.forSpecific(
                                 SongEventAvro.class,
-                                SongEventAvro.class.getSimpleName(),
+                                SongEventAvro.class.getName(),
                                 KafkaProperties.SCHEMA_REGISTRY_URL)
                 )
         );
