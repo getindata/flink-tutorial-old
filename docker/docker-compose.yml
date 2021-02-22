@@ -21,7 +21,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
 
   jobmanager:
-    image: flink:1.11.3-scala_2.11-java8
+    image: flink:1.12.1-scala_2.11-java8
     expose:
       - "6123"
     ports:
@@ -31,7 +31,7 @@ services:
       - JOB_MANAGER_RPC_ADDRESS=jobmanager
 
   taskmanager:
-    image: flink:1.11.3-scala_2.11-java8
+    image: flink:1.12.1-scala_2.11-java8
     expose:
       - "6121"
       - "6122"
@@ -46,10 +46,13 @@ services:
   schema-registry:
     image: confluentinc/cp-schema-registry:6.0.1
     ports:
-      - "8082:8081"
+      - "8082:8082"
+    expose:
+      - "8082"
     links:
       - "kafka:kafka"
       - "zookeeper:zookeeper"
     environment:
       - SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS=kafka:9092
       - SCHEMA_REGISTRY_HOST_NAME=schema-registry
+      - SCHEMA_REGISTRY_LISTENERS=http://0.0.0.0:8082
