@@ -20,12 +20,13 @@ import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindo
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.IterableUtils;
 
-import java.util.Comparator;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.PriorityQueue;
 
-import static java.util.stream.Collectors.toList;
+import static java.util.Comparator.comparing;
 
 public class TopSongsRanking {
 
@@ -138,11 +139,24 @@ public class TopSongsRanking {
         public void process(Context context,
                             Iterable<SongAndCount> elements,
                             Collector<SongsRanking> out) throws Exception {
-            List<SongAndCount> top3Songs = IterableUtils.toStream(elements)
-                    .sorted(Comparator.comparingLong(SongAndCount::getCount).reversed())
-                    .limit(this.n)
-                    .collect(toList());
-            out.collect(new SongsRanking(context.window(), top3Songs));
+            // Iterate over elements and keep on-line topN elements in a priority queue
+            // This is more efficient than loading all elements and sorting all of them.
+            PriorityQueue<SongAndCount> topNElementsQueue = new PriorityQueue<>(
+                    comparing(SongAndCount::getCount)
+            );
+            elements.forEach(element -> {
+                if (topNElementsQueue.size() < this.n) {
+                    topNElementsQueue.add(element);
+                } else if (topNElementsQueue.peek().getCount() < element.getCount()) {
+                    topNElementsQueue.poll();
+                    topNElementsQueue.add(element);
+                }
+            });
+
+            List<SongAndCount> topNElements = new ArrayList<>(topNElementsQueue);
+            Collections.reverse(topNElements);
+
+            out.collect(new SongsRanking(context.window(), topNElements));
         }
     }
 
