@@ -1,5 +1,7 @@
 package com.getindata.tutorial.base.model;
 
+import java.util.Objects;
+
 public class Song {
 
     public static SongBuilder builder() {
@@ -40,6 +42,7 @@ public class Song {
     public void setId(long id) {
         this.id = id;
     }
+
     public void setLength(int length) {
         this.length = length;
     }
@@ -62,4 +65,19 @@ public class Song {
                 '}';
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Song song = (Song) o;
+        return id == song.id &&
+                length == song.length &&
+                Objects.equals(name, song.name) &&
+                Objects.equals(author, song.author);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, length, name, author);
+    }
 }
