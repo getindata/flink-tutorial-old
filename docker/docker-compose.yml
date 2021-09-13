@@ -11,6 +11,8 @@ services:
     image: wurstmeister/kafka:2.12-2.4.0
     ports:
       - "9092:9092"
+    depends_on:
+      - zookeeper
     environment:
       HOSTNAME_COMMAND: "route -n | awk '/UG[ \t]/{print $$2}'"
       KAFKA_ADVERTISED_HOST_NAME: kafka
@@ -49,6 +51,9 @@ services:
       - "8082:8082"
     expose:
       - "8082"
+    depends_on:
+      - kafka
+      - zookeeper
     links:
       - "kafka:kafka"
       - "zookeeper:zookeeper"
