@@ -2,15 +2,12 @@ package com.getindata.solved;
 
 import com.getindata.tutorial.base.enrichmennt.EnrichmentService;
 import com.getindata.tutorial.base.kafka.KafkaProperties;
-import com.getindata.tutorial.base.model.Song;
 import org.apache.flink.annotation.VisibleForTesting;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.table.api.EnvironmentSettings;
 import org.apache.flink.table.api.TableEnvironment;
 import org.apache.flink.table.functions.FunctionContext;
 import org.apache.flink.table.functions.TableFunction;
-
-import java.util.Optional;
 
 public class EnrichSongsSql {
 
@@ -25,7 +22,7 @@ public class EnrichSongsSql {
 
         // Write enriched songs into kafka (title, author, long are non-null when enrichment succeeded).
         tableEnv.executeSql("INSERT INTO enriched_songs_sink SELECT * FROM enriched_songs WHERE title IS NOT NULL");
-        // Print not enriched songs into kafka (title, author, long are nnull when enrichment failed).
+        // Print not enriched songs into stdout (title, author, long are null when enrichment failed).
         tableEnv.executeSql("SELECT * FROM enriched_songs WHERE title IS NULL").print();
     }
 
@@ -33,17 +30,17 @@ public class EnrichSongsSql {
     static void enrichment(TableEnvironment tableEnv) {
         tableEnv.createTemporarySystemFunction("Enrich", EnrichmentFunction.class);
         tableEnv.executeSql(
-                "CREATE VIEW enriched_songs AS SELECT " +
-                        "   s.songId, " +
-                        "   s.`timestamp`, " +
-                        "   s.type, " +
-                        "   s.userId, " +
-                        "   e.f0 as title, " +
-                        "   e.f1 as author, " +
-                        "   e.f2 as length " +
-                        "FROM " +
-                        "   songs s, " +
-                        "   LATERAL TABLE(ENRICH(songId)) e"
+                "CREATE VIEW enriched_songs AS SELECT\n" +
+                        "   s.songId,\n" +
+                        "   s.`timestamp`,\n" +
+                        "   s.type,\n" +
+                        "   s.userId,\n" +
+                        "   e.f0 as title,\n" +
+                        "   e.f1 as author,\n" +
+                        "   e.f2 as length\n" +
+                        "FROM\n" +
+                        "   songs AS s\n" +
+                        "   LEFT JOIN LATERAL TABLE(ENRICH(songId)) AS e ON TRUE"
         );
     }
 
@@ -96,12 +93,9 @@ public class EnrichSongsSql {
         }
 
         public void eval(Long songId) {
-            final Optional<Song> song = service.getSongById(songId);
-            if (!song.isPresent()) {
-                collect(Tuple3.of(null, null, null));
-            } else {
-                collect(Tuple3.of(song.get().getName(), song.get().getAuthor(), song.get().getLength()));
-            }
+            service.getSongById(songId).ifPresent(song ->
+                    collect(Tuple3.of(song.getName(), song.getAuthor(), song.getLength()))
+            );
         }
     }
 
