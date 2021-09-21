@@ -45,6 +45,16 @@ services:
     environment:
       - JOB_MANAGER_RPC_ADDRESS=jobmanager
 
+  sql-client:
+    build:
+      context: ./sql-client/
+      args:
+        FLINK_VERSION: 1.13.2
+    depends_on:
+      - jobmanager
+    environment:
+      - JOB_MANAGER_RPC_ADDRESS=jobmanager
+
   schema-registry:
     image: confluentinc/cp-schema-registry:6.0.1
     ports:

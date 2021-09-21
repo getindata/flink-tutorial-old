@@ -1,0 +1,8 @@
+execution:
+  planner: blink               # using the Blink planner
+  type: streaming              # 'batch' or 'streaming' execution
+  result-mode: changelog       # 'changelog' or 'table' presentation of results
+  parallelism: 1               # parallelism of the program
+  max-parallelism: 128         # maximum parallelism
+  min-idle-state-retention: 0  # minimum idle state retention in ms
+  max-idle-state-retention: 0  # maximum idle state retention in ms
