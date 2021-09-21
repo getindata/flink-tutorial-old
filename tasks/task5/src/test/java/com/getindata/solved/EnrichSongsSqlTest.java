@@ -1,9 +1,7 @@
 package com.getindata.solved;
 
 import org.apache.flink.runtime.testutils.MiniClusterResourceConfiguration;
-import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 import org.apache.flink.test.util.MiniClusterWithClientResource;
 import org.apache.flink.types.Row;
@@ -15,7 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.getindata.solved.EnrichSongsSql.enrichment;
-import static org.apache.flink.table.api.Expressions.$;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
@@ -41,10 +38,13 @@ class EnrichSongsSqlTest {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         StreamTableEnvironment tableEnv = StreamTableEnvironment.create(env);
         // and: songs table
-        DataStream<Row> rows = env.fromElements(
-                Row.of(1L, 1000L, "PLAY", 10L)
+        tableEnv.executeSql("CREATE VIEW songs as (\n" +
+                "SELECT * FROM \n" +
+                "   (\n" +
+                "       VALUES (1, CAST(1000 AS TIMESTAMP(3)), 'PLAY', 10)\n" +
+                "   ) t1 (songId, `timestamp`, type, userId)\n" +
+                ")"
         );
-        dataStreamToTable(tableEnv, rows);
 
         // when
         enrichment(tableEnv);
@@ -63,10 +63,13 @@ class EnrichSongsSqlTest {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         StreamTableEnvironment tableEnv = StreamTableEnvironment.create(env);
         // and: songs table
-        DataStream<Row> rows = env.fromElements(
-                Row.of(999999L, 1000L, "PLAY", 10L)
+        tableEnv.executeSql("CREATE VIEW songs as (\n" +
+                "SELECT * FROM \n" +
+                "   (\n" +
+                "       VALUES (999999, CAST(1000 AS TIMESTAMP(3)), 'PLAY', 10)\n" +
+                "   ) t1 (songId, `timestamp`, type, userId)\n" +
+                ")"
         );
-        dataStreamToTable(tableEnv, rows);
 
         // when
         enrichment(tableEnv);
@@ -77,12 +80,6 @@ class EnrichSongsSqlTest {
         assertNull(enrichedSongs.get(0).getField(TITLE_COLUMN_POSITION));
         assertNull(enrichedSongs.get(0).getField(AUTHOR_COLUMN_POSITION));
         assertNull(enrichedSongs.get(0).getField(LENGTH_COLUMN_POSITION));
-    }
-
-
-    private void dataStreamToTable(StreamTableEnvironment tableEnv, DataStream<Row> rows) {
-        Table inputTable = tableEnv.fromDataStream(rows, $("songId"), $("timestamp"), $("type"), $("userId"));
-        tableEnv.createTemporaryView("songs", inputTable);
     }
 
 

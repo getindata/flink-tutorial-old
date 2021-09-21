@@ -48,7 +48,7 @@ public class EnrichSongsSql {
         tableEnv.executeSql(
                 "CREATE TABLE songs (" +
                         "   songId BIGINT, " +
-                        "   `timestamp` BIGINT, " +
+                        "   `timestamp` TIMESTAMP(3), " +
                         "   type STRING, " +
                         "   userId INT" +
                         ") WITH (" +
@@ -65,7 +65,7 @@ public class EnrichSongsSql {
         tableEnv.executeSql(
                 "CREATE TABLE enriched_songs_sink (\n" +
                         "songId BIGINT,\n" +
-                        "   `timestamp` BIGINT,\n" +
+                        "   `timestamp` TIMESTAMP(3),\n" +
                         "   type STRING,\n" +
                         "   userId INT,\n" +
                         "   title STRING,\n" +
