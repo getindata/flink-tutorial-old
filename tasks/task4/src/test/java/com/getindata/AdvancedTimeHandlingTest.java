@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 import static com.getindata.tutorial.base.model.TestDataBuilders.aRollingStonesSongEvent;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-// FIXME: remove code
+// FIXME: remove annotation
 @Disabled
 class AdvancedTimeHandlingTest {
 
