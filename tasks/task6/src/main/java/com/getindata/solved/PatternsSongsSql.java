@@ -1,7 +1,9 @@
 package com.getindata.solved;
 
+import org.apache.flink.annotation.VisibleForTesting;
 import org.apache.flink.table.api.EnvironmentSettings;
 import org.apache.flink.table.api.TableEnvironment;
+import org.apache.flink.table.api.TableResult;
 
 public class PatternsSongsSql {
 
@@ -11,22 +13,24 @@ public class PatternsSongsSql {
 
         createInMemorySourceTable(tableEnv);
         tableEnv.executeSql("SELECT * FROM songs").print();
+        pattern(tableEnv).print();
+    }
 
-        tableEnv.executeSql("SELECT * \n" +
+    @VisibleForTesting
+    static TableResult pattern(TableEnvironment tableEnv) {
+        return tableEnv.executeSql("SELECT * \n" +
                 "FROM songs\n" +
                 "    MATCH_RECOGNIZE (\n" +
                 "      PARTITION BY userid\n" +
                 "      ORDER BY ts\n" +
                 "      MEASURES\n" +
                 "        FIRST(A.song) AS song,\n" +
-                "        FIRST(A.listeningid) AS fli,\n" +
-                "        LAST(A.listeningid) AS lli\n" +
-                " AFTER MATCH SKIP PAST LAST ROW \n" +
+                "        A.listeningid AS fli,\n" +
+                "        LAST(B.listeningid) AS lli\n" +
                 "      PATTERN (A B{2,} C)\n" +
                 "      DEFINE\n" +
-                "        A AS true,\n" +
                 "        B AS B.song = A.song\n" +
-                "    ) \n").print();
+                "    ) \n");
     }
 
     private static void createInMemorySourceTable(TableEnvironment tableEnv) {
