@@ -73,7 +73,7 @@ public class EnrichSongsSql {
                         "   length INT\n" +
                         ") WITH (\n" +
                         "   'connector' = 'kafka',\n" +
-                        "   'topic' = '" + KafkaProperties.OUTPUT_AVRO_TOPIC + "',\n" +
+                        "   'topic' = '" + KafkaProperties.OUTPUT_SQL_AVRO_TOPIC + "',\n" +
                         "   'properties.bootstrap.servers' = 'kafka:9092',\n" +
                         "   'value.format' = 'avro-confluent',\n" +
                         "   'value.avro-confluent.schema-registry.url' = 'http://schema-registry:8082',\n" +
