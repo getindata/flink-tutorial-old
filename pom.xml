@@ -17,6 +17,7 @@
         <scala.baseVersion>2.11</scala.baseVersion>
         <junit.version>5.6.0</junit.version>
         <avro.version>1.10.1</avro.version>
+        <debezium-mysql-connector.version>1.4.0</debezium-mysql-connector.version>
     </properties>
 
     <modules>
@@ -69,6 +70,13 @@
             <artifactId>flink-connector-kafka_${scala.baseVersion}</artifactId>
             <version>${flink.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.alibaba.ververica</groupId>
+            <artifactId>flink-connector-mysql-cdc</artifactId>
+            <version>${debezium-mysql-connector.version}</version>
+        </dependency>
+
 
         <!-- explicitly add a standard logging framework, as Flink does not (in the future) have
           a hard dependency on one specific framework by default -->

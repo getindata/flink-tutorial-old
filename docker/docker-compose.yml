@@ -85,3 +85,13 @@ services:
     environment:
       SCHEMAREGISTRY_URL: http://schema-registry:8082/
       PROXY: "true"
+
+  mysql:
+    build:
+      context: ./mysql/
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=debezium
+      - MYSQL_USER=mysqluser
+      - MYSQL_PASSWORD=mysqlpw

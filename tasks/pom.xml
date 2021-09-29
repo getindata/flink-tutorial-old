@@ -22,6 +22,7 @@
         <module>task4</module>
         <module>task5</module>
         <module>task6</module>
+        <module>task7</module>
     </modules>
 
     <dependencies>
