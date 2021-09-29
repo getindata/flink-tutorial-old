@@ -16,6 +16,7 @@ public class EnrichSongs {
     public static void main(String[] args) throws Exception {
         final StreamExecutionEnvironment sEnv = StreamExecutionEnvironment.getExecutionEnvironment();
 
+
         // create a stream of events from source
         final DataStream<Either<SongEvent, EnrichedSongEvent>> events = sEnv
                 .addSource(new SongsSource())

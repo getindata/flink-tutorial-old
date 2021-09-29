@@ -41,7 +41,7 @@ class EnrichSongsSqlTest {
         tableEnv.executeSql("CREATE VIEW songs as (\n" +
                 "SELECT * FROM \n" +
                 "   (\n" +
-                "       VALUES (1, CAST(1000 AS TIMESTAMP(3)), 'PLAY', 10)\n" +
+                "       VALUES (1, TO_TIMESTAMP(FROM_UNIXTIME(1)), 'PLAY', 10)\n" +
                 "   ) t1 (songId, `timestamp`, type, userId)\n" +
                 ")"
         );
@@ -66,7 +66,7 @@ class EnrichSongsSqlTest {
         tableEnv.executeSql("CREATE VIEW songs as (\n" +
                 "SELECT * FROM \n" +
                 "   (\n" +
-                "       VALUES (999999, CAST(1000 AS TIMESTAMP(3)), 'PLAY', 10)\n" +
+                "       VALUES (999999, TO_TIMESTAMP(FROM_UNIXTIME(1)), 'PLAY', 10)\n" +
                 "   ) t1 (songId, `timestamp`, type, userId)\n" +
                 ")"
         );
