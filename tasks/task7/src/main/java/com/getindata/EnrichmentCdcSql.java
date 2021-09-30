@@ -42,11 +42,11 @@ public class EnrichmentCdcSql {
         final StreamTableEnvironment tenv = StreamTableEnvironment.create(env);
 
         final DataStream<SongEventAvro> events = env.addSource(getKafkaEventsSource());
-        final DataStream<SongCdcEvent> rowDataStream = getSongCdcEvents(tenv);
+        final DataStream<SongCdcEvent> cdcEvents = getSongCdcEvents(tenv);
 
         // TODO: keyBy both streams, connect them and apply KeyedCoProcessFunction which implements low-level join.
 
-        rowDataStream.print();
+        cdcEvents.print();
 
         env.execute("Enrichment CDC");
     }
