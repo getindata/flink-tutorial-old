@@ -23,7 +23,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
 
   jobmanager:
-    image: flink:1.13.2-scala_2.11-java8
+    image: flink:1.13.2-scala_2.12-java11
     expose:
       - "6123"
     ports:
@@ -33,7 +33,7 @@ services:
       - JOB_MANAGER_RPC_ADDRESS=jobmanager
 
   taskmanager:
-    image: flink:1.13.2-scala_2.11-java8
+    image: flink:1.13.2-scala_2.12-java11
     expose:
       - "6121"
       - "6122"
