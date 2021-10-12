@@ -38,7 +38,7 @@ public class WindowAggregations {
     static DataStream<UserStatistics> pipeline(DataStream<EnrichedSongEvent> source) {
         return source
                 .assignTimestampsAndWatermarks(new SongWatermarkStrategy())
-                .keyBy(new SongKeySelector())
+                .keyBy(new UserKeySelector())
                 .<TimeWindow>window(null /* TODO fill in the code */)
                 .aggregate(
                         new SongAggregationFunction(),
@@ -68,7 +68,7 @@ public class WindowAggregations {
         }
     }
 
-    static class SongKeySelector implements KeySelector<EnrichedSongEvent, Integer> {
+    static class UserKeySelector implements KeySelector<EnrichedSongEvent, Integer> {
         @Override
         public Integer getKey(EnrichedSongEvent songEvent) throws Exception {
             //TODO fill in the code

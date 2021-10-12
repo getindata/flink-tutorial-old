@@ -73,7 +73,7 @@ public class KafkaWindowAggregations {
 
         // song plays in user sessions
         final WindowedStream<SongEventAvro, Integer, TimeWindow> windowedStream = eventsInEventTime
-                .keyBy(new SongKeySelector())
+                .keyBy(new UserKeySelector())
                 .window(EventTimeSessionWindows.withGap(Time.minutes(20)));
 
         return windowedStream.aggregate(
@@ -108,7 +108,7 @@ public class KafkaWindowAggregations {
         }
     }
 
-    static class SongKeySelector implements KeySelector<SongEventAvro, Integer> {
+    static class UserKeySelector implements KeySelector<SongEventAvro, Integer> {
         @Override
         public Integer getKey(SongEventAvro songEvent) {
             /* TODO put your code here */

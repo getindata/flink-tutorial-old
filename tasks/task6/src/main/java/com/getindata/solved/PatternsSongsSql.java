@@ -27,6 +27,7 @@ public class PatternsSongsSql {
                 "        FIRST(A.song) AS song,\n" +
                 "        A.listeningid AS fli,\n" +
                 "        LAST(B.listeningid) AS lli\n" +
+                " AFTER MATCH SKIP PAST LAST ROW " +
                 "      PATTERN (A B{2,} C)\n" +
                 "      DEFINE\n" +
                 "        B AS B.song = A.song\n" +
