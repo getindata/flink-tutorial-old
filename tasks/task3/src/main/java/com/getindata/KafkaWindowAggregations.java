@@ -3,14 +3,13 @@ package com.getindata;
 import com.getindata.tutorial.base.kafka.KafkaProperties;
 import com.getindata.tutorial.base.model.SongEventAvro;
 import com.getindata.tutorial.base.model.UserStatisticsAvro;
-import org.apache.flink.api.common.eventtime.TimestampAssigner;
-import org.apache.flink.api.common.eventtime.TimestampAssignerSupplier;
-import org.apache.flink.api.common.eventtime.WatermarkGenerator;
-import org.apache.flink.api.common.eventtime.WatermarkGeneratorSupplier;
-import org.apache.flink.api.common.eventtime.WatermarkOutput;
-import org.apache.flink.api.common.eventtime.WatermarkStrategy;
+import org.apache.flink.api.common.eventtime.*;
 import org.apache.flink.api.common.functions.AggregateFunction;
 import org.apache.flink.api.java.functions.KeySelector;
+import org.apache.flink.connector.kafka.sink.KafkaRecordSerializationSchema;
+import org.apache.flink.connector.kafka.sink.KafkaSink;
+import org.apache.flink.connector.kafka.source.KafkaSource;
+import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsInitializer;
 import org.apache.flink.formats.avro.registry.confluent.ConfluentRegistryAvroDeserializationSchema;
 import org.apache.flink.formats.avro.registry.confluent.ConfluentRegistryAvroSerializationSchema;
 import org.apache.flink.streaming.api.datastream.DataStream;
@@ -20,48 +19,47 @@ import org.apache.flink.streaming.api.functions.windowing.WindowFunction;
 import org.apache.flink.streaming.api.windowing.assigners.EventTimeSessionWindows;
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
-import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
-import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer;
-import org.apache.flink.streaming.connectors.kafka.internals.KafkaSerializationSchemaWrapper;
 import org.apache.flink.util.Collector;
+
+import java.time.Duration;
 
 public class KafkaWindowAggregations {
 
     public static void main(String[] args) throws Exception {
         final StreamExecutionEnvironment sEnv = StreamExecutionEnvironment.getExecutionEnvironment();
 
-        final String inputTopic = KafkaProperties.INPUT_AVRO_TOPIC;
-        final String outputTopic = KafkaProperties.OUTPUT_AVRO_TOPIC;
-
-        // create a stream of events from source
-        final DataStream<SongEventAvro> events = sEnv.addSource(
-                new FlinkKafkaConsumer<>(
-                        inputTopic,
+        final KafkaSource<SongEventAvro> source = KafkaSource.<SongEventAvro>builder()
+                .setBootstrapServers(KafkaProperties.BOOTSTRAP_SERVERS)
+                .setTopics(KafkaProperties.INPUT_AVRO_TOPIC)
+                .setGroupId(KafkaProperties.GROUP_ID)
+                .setStartingOffsets(OffsetsInitializer.earliest())
+                .setValueOnlyDeserializer(
                         ConfluentRegistryAvroDeserializationSchema.forSpecific(
                                 SongEventAvro.class,
-                                KafkaProperties.SCHEMA_REGISTRY_URL),
-                        KafkaProperties.getKafkaProperties()
+                                KafkaProperties.SCHEMA_REGISTRY_URL)
                 )
-        );
+                .build();
+
+
+        final KafkaSink<UserStatisticsAvro> sink = KafkaSink.<UserStatisticsAvro>builder()
+                .setBootstrapServers(KafkaProperties.BOOTSTRAP_SERVERS)
+                .setRecordSerializer(
+                        KafkaRecordSerializationSchema.<UserStatisticsAvro>builder()
+                                .setTopic(KafkaProperties.OUTPUT_AVRO_TOPIC)
+                                .setValueSerializationSchema(
+                                        ConfluentRegistryAvroSerializationSchema.forSpecific(
+                                                UserStatisticsAvro.class,
+                                                UserStatisticsAvro.class.getSimpleName(),
+                                                KafkaProperties.SCHEMA_REGISTRY_URL)
+                                )
+                                .build()
+                )
+                .build();
+
+        final DataStream<SongEventAvro> events = sEnv.fromSource(source, WatermarkStrategy.noWatermarks(), "Kafka Source");
 
         final DataStream<UserStatisticsAvro> statistics = pipeline(events);
-
-        statistics.addSink(
-                new FlinkKafkaProducer<>(
-                        outputTopic,
-                        new KafkaSerializationSchemaWrapper<>(
-                                outputTopic,
-                                null,
-                                false,
-                                ConfluentRegistryAvroSerializationSchema.forSpecific(
-                                        UserStatisticsAvro.class,
-                                        UserStatisticsAvro.class.getSimpleName(),
-                                        KafkaProperties.SCHEMA_REGISTRY_URL)
-                        ),
-                        KafkaProperties.getKafkaProperties(),
-                        FlinkKafkaProducer.Semantic.EXACTLY_ONCE
-                )
-        );
+        statistics.sinkTo(sink);
 
         // execute streams
         sEnv.execute();
@@ -69,7 +67,7 @@ public class KafkaWindowAggregations {
 
 
     static DataStream<UserStatisticsAvro> pipeline(DataStream<SongEventAvro> source) {
-        final DataStream<SongEventAvro> eventsInEventTime = source.assignTimestampsAndWatermarks(new SongWatermarkStrategy());
+        final DataStream<SongEventAvro> eventsInEventTime = source.assignTimestampsAndWatermarks(new SongWatermarkStrategy().withIdleness(Duration.ofSeconds(10)));
 
         // song plays in user sessions
         final WindowedStream<SongEventAvro, Integer, TimeWindow> windowedStream = eventsInEventTime

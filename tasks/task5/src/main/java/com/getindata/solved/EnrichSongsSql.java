@@ -4,16 +4,17 @@ import com.getindata.tutorial.base.enrichmennt.EnrichmentService;
 import com.getindata.tutorial.base.kafka.KafkaProperties;
 import org.apache.flink.annotation.VisibleForTesting;
 import org.apache.flink.api.java.tuple.Tuple3;
-import org.apache.flink.table.api.EnvironmentSettings;
+import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.table.api.TableEnvironment;
+import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 import org.apache.flink.table.functions.FunctionContext;
 import org.apache.flink.table.functions.TableFunction;
 
 public class EnrichSongsSql {
 
     public static void main(String[] args) {
-        final EnvironmentSettings settings = EnvironmentSettings.newInstance().inStreamingMode().build();
-        final TableEnvironment tableEnv = TableEnvironment.create(settings);
+        final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        final TableEnvironment tableEnv = StreamTableEnvironment.create(env);
 
         createKafkaSourceTable(tableEnv);
         createKafkaSinkTable(tableEnv);
@@ -54,7 +55,9 @@ public class EnrichSongsSql {
                         ") WITH (" +
                         "   'connector' = 'kafka'," +
                         "   'topic' = '" + KafkaProperties.INPUT_AVRO_TOPIC + "'," +
+                        "   'properties.group.id' = 'flink_tutorial'," +
                         "   'properties.bootstrap.servers' = 'kafka:9092'," +
+                        "   'scan.startup.mode' = 'earliest-offset'," +
                         "   'value.format' = 'avro-confluent'," +
                         "   'value.avro-confluent.schema-registry.url' = 'http://schema-registry:8082'" +
                         ")"

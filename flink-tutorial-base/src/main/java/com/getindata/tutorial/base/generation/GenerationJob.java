@@ -1,19 +1,20 @@
 package com.getindata.tutorial.base.generation;
 
-import com.getindata.tutorial.base.input.SongEventSerializationSchema;
 import com.getindata.tutorial.base.kafka.KafkaProperties;
 import com.getindata.tutorial.base.model.SongEvent;
-import org.apache.flink.streaming.connectors.kafka.KafkaSerializationSchema;
+import org.apache.flink.connector.kafka.sink.KafkaRecordSerializationSchema;
 
 public class GenerationJob extends GenerationHelper<SongEvent> {
-    protected GenerationJob(String topic, KafkaSerializationSchema<SongEvent> serializer) {
+    protected GenerationJob(String topic, KafkaRecordSerializationSchema<SongEvent> serializer) {
         super(topic, serializer);
     }
 
     public static void main(String[] args) throws Exception {
         GenerationJob job = new GenerationJob(
                 KafkaProperties.INPUT_TOPIC,
-                new SongEventSerializationSchema(KafkaProperties.INPUT_TOPIC)
+                KafkaRecordSerializationSchema.<SongEvent>builder()
+                        .setTopic(KafkaProperties.INPUT_TOPIC)
+                        .build()
         );
 
         job.run();

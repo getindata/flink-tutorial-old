@@ -6,7 +6,6 @@ import com.getindata.tutorial.base.model.EnrichedSongEventBuilder;
 import com.getindata.tutorial.base.model.SongEvent;
 import com.getindata.tutorial.base.model.SongEventBuilder;
 import com.getindata.tutorial.base.model.SongEventType;
-import org.apache.flink.shaded.guava18.com.google.common.collect.Lists;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,8 +38,8 @@ public class UserSession {
             boolean wasStopped = stopChoose > 0.8;
             boolean wasSkipped = stopChoose > 0.6 && stopChoose <= 0.8;
 
-            final ArrayList<EnrichedSongEvent> events = Lists
-                    .newArrayList(songEventBuilder.setType(SongEventType.PLAY).build());
+            final ArrayList<EnrichedSongEvent> events = new ArrayList<>();
+            events.add(songEventBuilder.setType(SongEventType.PLAY).build());
 
             if (wasStopped) {
                 events.add(songEventBuilder.setType(SongEventType.PAUSE).build());
