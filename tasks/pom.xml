@@ -30,12 +30,6 @@
             <artifactId>flink-tutorial-base</artifactId>
             <version>${project.version}</version>
         </dependency>
-
-        <dependency>
-            <groupId>org.apache.flink</groupId>
-            <artifactId>flink-cep_${scala.baseVersion}</artifactId>
-            <version>${flink.version}</version>
-        </dependency>
     </dependencies>
 
 </project>

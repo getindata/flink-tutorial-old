@@ -1,12 +1,14 @@
-package com.getindata.tutorial.base.generation;
+package com.getindata;
 
+import com.getindata.tutorial.base.generation.GenerationHelper;
 import com.getindata.tutorial.base.kafka.KafkaProperties;
 import com.getindata.tutorial.base.model.SongEvent;
-import com.getindata.tutorial.base.model.solved.SongEventAvro;
+import com.getindata.tutorial.base.model.SongEventAvro;
 import org.apache.flink.connector.kafka.sink.KafkaRecordSerializationSchema;
 import org.apache.flink.formats.avro.registry.confluent.ConfluentRegistryAvroSerializationSchema;
 
 public class GenerationJobAvro extends GenerationHelper<SongEventAvro> {
+
     protected GenerationJobAvro(String topic, KafkaRecordSerializationSchema<SongEventAvro> serializer) {
         super(topic, serializer);
     }
@@ -30,11 +32,12 @@ public class GenerationJobAvro extends GenerationHelper<SongEventAvro> {
 
     @Override
     protected SongEventAvro map(SongEvent event) {
+        // FIXME: pass constructor parameters properly
         return new SongEventAvro(
-                event.getSongId(),
-                event.getTimestamp(),
-                event.getType().toString(),
-                event.getUserId()
+                // event.getSongId(),
+                // event.getTimestamp(),
+                // event.getType().toString(),
+                // event.getUserId()
         );
     }
 

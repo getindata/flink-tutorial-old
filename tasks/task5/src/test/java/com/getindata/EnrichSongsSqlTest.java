@@ -53,7 +53,7 @@ class EnrichSongsSqlTest {
         // then
         List<Row> enrichedSongs = collectRowsFromTable(tableEnv, "enriched_songs");
         assertEquals(1, enrichedSongs.size());
-        assertEquals("Yellow Submarine", enrichedSongs.get(0).getField(TITLE_COLUMN_POSITION));
+        assertEquals("Yesterday", enrichedSongs.get(0).getField(TITLE_COLUMN_POSITION));
         assertEquals("The Beatles", enrichedSongs.get(0).getField(AUTHOR_COLUMN_POSITION));
         assertEquals(160000, enrichedSongs.get(0).getField(LENGTH_COLUMN_POSITION));
     }

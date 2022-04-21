@@ -51,7 +51,7 @@ public class WindowAggregations {
     static class SongWatermarkStrategy implements WatermarkStrategy<EnrichedSongEvent> {
         @Override
         public WatermarkGenerator<EnrichedSongEvent> createWatermarkGenerator(WatermarkGeneratorSupplier.Context context) {
-            return new WatermarkGenerator<EnrichedSongEvent>() {
+            return new WatermarkGenerator<>() {
                 @Override
                 public void onEvent(EnrichedSongEvent event, long eventTimestamp, WatermarkOutput output) {
                     /* TODO fill in the code */
