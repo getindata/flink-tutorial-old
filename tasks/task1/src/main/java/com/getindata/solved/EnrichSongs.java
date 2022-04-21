@@ -19,12 +19,12 @@ public class EnrichSongs {
 
     public static void main(String[] args) throws Exception {
         final StreamExecutionEnvironment sEnv = StreamExecutionEnvironment.getExecutionEnvironment();
+        // Chaining is disabled for presentation purposes - with chaining enabled job graph in Flink UI is just boring :)
+        sEnv.disableOperatorChaining();
 
         // create a stream of events from source
         final DataStream<Either<SongEvent, EnrichedSongEvent>> events = sEnv
                 .addSource(new SongsSource())
-                // Chaining is disabled for presentation purposes - with chaining enabled job graph in Flink UI is just boring :)
-                .disableChaining()
                 .map(new EnrichmentFunction());
 
         events.flatMap(new SelectValidEvents())

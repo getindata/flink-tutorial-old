@@ -14,11 +14,8 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.getindata.PatternsSongsSql.pattern;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-// FIXME: remove annotation
-@Disabled
 class PatternsSongsSqlTest {
     @ClassRule
     public static MiniClusterWithClientResource flinkCluster = new MiniClusterWithClientResource(
@@ -30,6 +27,7 @@ class PatternsSongsSqlTest {
                     .build()
     );
 
+    @Disabled("Disabled until PatternsSongsSql is implemented")
     @Test
     public void shouldNotFindPattern() {
         // given: execution environment
@@ -48,10 +46,11 @@ class PatternsSongsSqlTest {
         TableResult res = null;
 
         // then
-        List<Row> foundSongs = collectRowsFromTable(tableEnv, res);
+        List<Row> foundSongs = collectRowsFromTable(res);
         assertEquals(0, foundSongs.size());
     }
 
+    @Disabled("Disabled until PatternsSongsSql is implemented")
     @Test
     public void shouldFindPattern() {
         // given: execution environment
@@ -73,14 +72,14 @@ class PatternsSongsSqlTest {
         TableResult res = null;
 
         // then
-        List<Row> foundSongs = collectRowsFromTable(tableEnv, res);
+        List<Row> foundSongs = collectRowsFromTable(res);
         assertEquals(1, foundSongs.size());
         assertEquals("Billie Jean", foundSongs.get(0).getField("song"));
         assertEquals(2, foundSongs.get(0).getField("fli"));
         assertEquals(4, foundSongs.get(0).getField("lli"));
     }
 
-    private List<Row> collectRowsFromTable(StreamTableEnvironment tableEnv, TableResult res) {
+    private List<Row> collectRowsFromTable(TableResult res) {
         List<Row> rows = new ArrayList<>();
         CloseableIterator<Row> collect = res.collect();
         while (collect.hasNext()) {

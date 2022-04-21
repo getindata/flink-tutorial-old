@@ -29,7 +29,8 @@ public class PatternsSongsSql {
                 "        LAST(B.listeningid) AS lli\n" +
                 "      PATTERN (A B{2,} C)\n" +
                 "      DEFINE\n" +
-                "        B AS B.song = A.song\n" +
+                "        B AS B.song = A.song,\n" +
+                "        C as C.song <> A.song \n" +
                 "    ) \n");
     }
 

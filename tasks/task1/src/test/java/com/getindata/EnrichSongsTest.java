@@ -12,12 +12,11 @@ import static com.getindata.tutorial.base.model.TestDataBuilders.aRawSongEvent;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-// FIXME: remove @Disabled
-@Disabled
 class EnrichSongsTest {
 
-    private EnrichmentFunction enrichmentFunction = new EnrichmentFunction();
+    private final EnrichmentFunction enrichmentFunction = new EnrichmentFunction();
 
+    @Disabled("Disabled until EnrichmentFunction is implemented")
     @Test
     void shouldEnrichExistingSong() throws Exception {
         // todo: build a test object here
@@ -31,6 +30,7 @@ class EnrichSongsTest {
         assertEquals("Get Off Of My Cloud", result.right().getSong().getName());
     }
 
+    @Disabled("Disabled until EnrichmentFunction is implemented")
     @Test
     void shouldFilterIrrelevantSong() {
         // todo: put your code here

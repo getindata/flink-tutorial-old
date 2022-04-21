@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class EnrichSongsTest {
 
-    private EnrichmentFunction enrichmentFunction = new EnrichmentFunction();
+    private final EnrichmentFunction enrichmentFunction = new EnrichmentFunction();
 
     @Test
     void shouldEnrichExistingSong() throws Exception {

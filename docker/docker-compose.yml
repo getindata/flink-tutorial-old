@@ -18,12 +18,12 @@ services:
       KAFKA_ADVERTISED_HOST_NAME: kafka
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_CREATE_TOPICS: "songs:1:1,stats:1:1"
+      KAFKA_CREATE_TOPICS: "songs:10:1,stats:10:1,input-avro:10:1,output-avro:10:1"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
   jobmanager:
-    image: flink:1.13.2-scala_2.12-java11
+    image: flink:1.14.4-scala_2.12-java11
     expose:
       - "6123"
     ports:
@@ -33,7 +33,7 @@ services:
       - JOB_MANAGER_RPC_ADDRESS=jobmanager
 
   taskmanager:
-    image: flink:1.13.2-scala_2.12-java11
+    image: flink:1.14.4-scala_2.12-java11
     expose:
       - "6121"
       - "6122"
@@ -49,7 +49,7 @@ services:
     build:
       context: ./sql-client/
       args:
-        FLINK_VERSION: 1.13.2
+        FLINK_VERSION: 1.14.4
     depends_on:
       - jobmanager
     environment:
@@ -85,3 +85,18 @@ services:
     environment:
       SCHEMAREGISTRY_URL: http://schema-registry:8082/
       PROXY: "true"
+
+  kafka-ui:
+    container_name: kafka-ui
+    image: provectuslabs/kafka-ui:latest
+    ports:
+      - 8083:8080
+    depends_on:
+      - zookeeper
+      - kafka
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+      KAFKA_CLUSTERS_0_JMXPORT: 9997
+      KAFKA_CLUSTERS_0_KAFKACONNECT_0_NAME: first

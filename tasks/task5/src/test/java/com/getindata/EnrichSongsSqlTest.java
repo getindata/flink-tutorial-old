@@ -16,8 +16,6 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-// FIXME: remove annotation
-@Disabled
 class EnrichSongsSqlTest {
 
     private static final int TITLE_COLUMN_POSITION = 4;
@@ -34,6 +32,7 @@ class EnrichSongsSqlTest {
                     .build()
     );
 
+    @Disabled("Disabled until EnrichSongsSql is implemented")
     @Test
     public void shouldEnrichValidEvent() {
         // given: execution environment
@@ -59,6 +58,7 @@ class EnrichSongsSqlTest {
         assertEquals(160000, enrichedSongs.get(0).getField(LENGTH_COLUMN_POSITION));
     }
 
+    @Disabled("Disabled until EnrichSongsSql is implemented")
     @Test
     public void shouldNotEnrichValidEvent() {
         // given: execution environment

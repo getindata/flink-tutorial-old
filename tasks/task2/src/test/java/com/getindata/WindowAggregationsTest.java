@@ -23,8 +23,6 @@ import static com.google.common.collect.Lists.newArrayList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-// FIXME: remove @Disabled
-@Disabled
 class WindowAggregationsTest {
 
     @ClassRule
@@ -42,6 +40,7 @@ class WindowAggregationsTest {
         CollectSink.values.clear();
     }
 
+    @Disabled("Disabled until WindowAggregations is implemented")
     @Test
     void shouldAggregateUserStatistics() throws Exception {
         // given
@@ -103,6 +102,7 @@ class WindowAggregationsTest {
         ));
     }
 
+    @Disabled("Disabled until WindowAggregations is implemented")
     @Test
     void shouldAggregateUserStatisticsForMultipleUsers() throws Exception {
         // given
