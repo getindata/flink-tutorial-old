@@ -19,10 +19,9 @@ import java.util.stream.Collectors;
 import static com.getindata.tutorial.base.model.TestDataBuilders.aRollingStonesSongEvent;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-// FIXME: remove annotation
-@Disabled
 class AdvancedTimeHandlingTest {
 
+    @Disabled("Disabled until AdvancedTimeHandling is implemented")
     @Test
     void shouldEmitNotificationIfUserListensToTheBandAtLeastThreeTimes() throws Exception {
         SongCountingProcessFunction function = new SongCountingProcessFunction();
@@ -50,6 +49,8 @@ class AdvancedTimeHandlingTest {
         assertEquals(new SongCount(10, 3), output.get(0));
     }
 
+
+    @Disabled("Disabled until AdvancedTimeHandling is implemented")
     @Test
     void shouldNotEmitNotificationIfGapBetweenSongsIsTooLong() throws Exception {
         SongCountingProcessFunction function = new SongCountingProcessFunction();
