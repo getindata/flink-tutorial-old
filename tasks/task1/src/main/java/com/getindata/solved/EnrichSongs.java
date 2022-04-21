@@ -1,6 +1,6 @@
 package com.getindata.solved;
 
-import com.getindata.tutorial.base.enrichmennt.EnrichmentService;
+import com.getindata.enrichment.EnrichmentService;
 import com.getindata.tutorial.base.input.SongsSource;
 import com.getindata.tutorial.base.model.EnrichedSongEvent;
 import com.getindata.tutorial.base.model.Song;

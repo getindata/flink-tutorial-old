@@ -1,4 +1,4 @@
-package com.getindata.tutorial.base.enrichmennt;
+package com.getindata.enrichment;
 
 import com.getindata.tutorial.base.model.Song;
 

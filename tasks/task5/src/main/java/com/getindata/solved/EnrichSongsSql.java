@@ -1,6 +1,6 @@
 package com.getindata.solved;
 
-import com.getindata.tutorial.base.enrichmennt.EnrichmentService;
+import com.getindata.enrichment.EnrichmentService;
 import com.getindata.tutorial.base.kafka.KafkaProperties;
 import org.apache.flink.annotation.VisibleForTesting;
 import org.apache.flink.api.java.tuple.Tuple3;
