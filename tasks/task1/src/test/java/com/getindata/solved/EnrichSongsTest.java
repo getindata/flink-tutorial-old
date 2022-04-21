@@ -25,7 +25,7 @@ class EnrichSongsTest {
         Either<SongEvent, EnrichedSongEvent> result = enrichmentFunction.map(event);
 
         assertTrue(result.isRight());
-        assertEquals("Get Off Of My Cloud", result.right().getSong().getName());
+        assertEquals("Paint It Black", result.right().getSong().getName());
     }
 
     @Test
