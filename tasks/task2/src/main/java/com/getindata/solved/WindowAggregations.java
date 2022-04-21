@@ -3,6 +3,7 @@ package com.getindata.solved;
 import com.getindata.tutorial.base.input.EnrichedSongsSource;
 import com.getindata.tutorial.base.model.EnrichedSongEvent;
 import com.getindata.tutorial.base.model.UserStatistics;
+import org.apache.flink.annotation.VisibleForTesting;
 import org.apache.flink.api.common.eventtime.TimestampAssigner;
 import org.apache.flink.api.common.eventtime.TimestampAssignerSupplier;
 import org.apache.flink.api.common.eventtime.Watermark;
@@ -38,6 +39,7 @@ public class WindowAggregations {
         sEnv.execute();
     }
 
+    @VisibleForTesting
     static DataStream<UserStatistics> pipeline(DataStream<EnrichedSongEvent> source) {
         return source
                 .assignTimestampsAndWatermarks(new SongWatermarkStrategy())
@@ -55,7 +57,7 @@ public class WindowAggregations {
 
         @Override
         public WatermarkGenerator<EnrichedSongEvent> createWatermarkGenerator(WatermarkGeneratorSupplier.Context context) {
-            return new WatermarkGenerator<EnrichedSongEvent>() {
+            return new WatermarkGenerator<>() {
                 @Override
                 public void onEvent(EnrichedSongEvent songEvent, long eventTimestamp, WatermarkOutput output) {
                     Watermark watermark = songEvent.getUserId() % 2 == 1

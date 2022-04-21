@@ -18,7 +18,7 @@ services:
       KAFKA_ADVERTISED_HOST_NAME: kafka
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_CREATE_TOPICS: "songs:1:1,stats:1:1"
+      KAFKA_CREATE_TOPICS: "songs:10:1,stats:10:1,input-avro:10:1,output-avro:10:1"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 

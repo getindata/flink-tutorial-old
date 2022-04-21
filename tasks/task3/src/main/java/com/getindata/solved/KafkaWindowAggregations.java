@@ -3,7 +3,14 @@ package com.getindata.solved;
 import com.getindata.tutorial.base.kafka.KafkaProperties;
 import com.getindata.tutorial.base.model.solved.SongEventAvro;
 import com.getindata.tutorial.base.model.solved.UserStatisticsAvro;
-import org.apache.flink.api.common.eventtime.*;
+import org.apache.flink.annotation.VisibleForTesting;
+import org.apache.flink.api.common.eventtime.TimestampAssigner;
+import org.apache.flink.api.common.eventtime.TimestampAssignerSupplier;
+import org.apache.flink.api.common.eventtime.Watermark;
+import org.apache.flink.api.common.eventtime.WatermarkGenerator;
+import org.apache.flink.api.common.eventtime.WatermarkGeneratorSupplier;
+import org.apache.flink.api.common.eventtime.WatermarkOutput;
+import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.AggregateFunction;
 import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.connector.kafka.sink.KafkaRecordSerializationSchema;
@@ -21,7 +28,6 @@ import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.util.Collector;
 
-import java.time.Duration;
 import java.time.Instant;
 
 public class KafkaWindowAggregations {
@@ -56,7 +62,7 @@ public class KafkaWindowAggregations {
                 )
                 .build();
 
-        final DataStream<SongEventAvro> events = sEnv.fromSource(source, WatermarkStrategy.noWatermarks(), "Kafka Source");
+        final DataStream<SongEventAvro> events = sEnv.fromSource(source, new SongWatermarkStrategy(), "Kafka Source");
         final DataStream<UserStatisticsAvro> statistics = pipeline(events);
         statistics.sinkTo(sink);
 
@@ -64,14 +70,14 @@ public class KafkaWindowAggregations {
         sEnv.execute();
     }
 
-
+    @VisibleForTesting
     static DataStream<UserStatisticsAvro> pipeline(DataStream<SongEventAvro> source) {
         final DataStream<SongEventAvro> eventsInEventTime = source.assignTimestampsAndWatermarks(
-                new SongWatermarkStrategy() .withIdleness(Duration.ofSeconds(10)));
+                new SongWatermarkStrategy());
 
         // song plays in user sessions
         final WindowedStream<SongEventAvro, Integer, TimeWindow> windowedStream = eventsInEventTime
-                .keyBy(new SongKeySelector())
+                .keyBy(new UserIdSelector())
                 .window(EventTimeSessionWindows.withGap(Time.minutes(20)));
 
         return windowedStream.aggregate(
@@ -86,7 +92,7 @@ public class KafkaWindowAggregations {
 
         @Override
         public WatermarkGenerator<SongEventAvro> createWatermarkGenerator(WatermarkGeneratorSupplier.Context context) {
-            return new WatermarkGenerator<SongEventAvro>() {
+            return new WatermarkGenerator<>() {
                 @Override
                 public void onEvent(SongEventAvro songEvent, long eventTimestamp, WatermarkOutput output) {
                     Watermark watermark = songEvent.getUserId() % 2 == 1
@@ -108,7 +114,7 @@ public class KafkaWindowAggregations {
         }
     }
 
-    static class SongKeySelector implements KeySelector<SongEventAvro, Integer> {
+    static class UserIdSelector implements KeySelector<SongEventAvro, Integer> {
         @Override
         public Integer getKey(SongEventAvro songEvent) {
             return songEvent.getUserId();
